@@ -1593,6 +1593,10 @@ public class Cube {
 		}
 	}
 
+	public char getColor(int x, int y, int z, char dir) {
+		return cubiePos[x][y][z].getColorOfDir(dir);
+	}
+
 	/*
 	 * Paints the cube using methods from the AWT framework. Paints the cube in an "unfolded" manner.
 	 * @param g A Graphics object
