@@ -1,5 +1,7 @@
 package comschakravorti21.github.cubeassist;
 
+import android.util.Log;
+
 /**
  * Copyright 2017, Shoumyo Chakravorti, All rights reserved.
  * <p>
@@ -99,13 +101,23 @@ public class Cube {
 
 	}
 
+	public Cube(Cube nCube) {
+		for(int x = 0; x<3; x++) {
+			for(int y = 0; y<3; y++) {
+				for(int z = 0; z<3; z++) {
+					cubiePos[x][y][z] = nCube.cubiePos[x][y][z];
+				}
+			}
+		}
+	}
+
 	/**
 	 * Takes a String value of a turn or rotation in standard Rubik's Cube notation and applies the turn or rotation to
 	 * the cube. Valid turns currently include any turn in the following planes: U, D, F, B, L, R, M, E, S
 	 * Valid rotations are x, y, and z rotations.
 	 * @param turn the turn to be performed
 	 */
-	private void turn(String turn) {
+	public void turn(String turn) {
 		//See the first case (B) to understand how all cases work
 		char[] preChange; //Directions prior to turning
 		char[] postChange; //What the directions change to after the turn
@@ -529,9 +541,9 @@ public class Cube {
 	 * @param moves the moves to be applied to the cube
 	 * @return the moves performed on the cube (same as {@code moves})
 	 */
-	private String performMoves(String moves) {
+	public String performMoves(String moves) {
 		for(int i = 0; i<moves.length(); i++) {
-			if(moves.substring(i, i+1).equals(" ")) { //Only check if there is a meaningful character
+			if(!moves.substring(i, i+1).equals(" ")) { //Only check if there is a meaningful character
 				if(i != moves.length()-1) {
 					if(moves.substring(i+1, i+2).compareTo("2") == 0) {
 						//Turning twice ex. U2
@@ -730,9 +742,11 @@ public class Cube {
 	 * which a solution can be generated.
 	 * @param scramble the scramble to be performed
 	 */
-	public void scramble(String scramble) {
+	public Cube scramble(String scramble) {
 		//Rotate the cube to get white on top, then return cube to original position at end of scramble
 		performMoves("z2 " + scramble + " z2");
+		Log.e("Scrambled", "true");
+		return this;
 	}
 
 	/**
@@ -1533,11 +1547,10 @@ public class Cube {
 			for(int j = 0; j<cubiePos[0].length; j++) {
 				for(int k = 0; k<cubiePos[0][0].length; k++) {
 					CubieColor[] tempColor = cubiePos[i][j][k].getColors();
-					System.out.print(i + ", " + j + ", " + k + ", ");
+					Log.e("" + i + ", " + j + ", " + k + ", ", "" + k);
 					for (CubieColor aTempColor : tempColor) {
-						System.out.print(aTempColor.getColor() + ", " + aTempColor.getDir() + ", ");
+						Log.e("" + aTempColor.getColor(), "" + aTempColor.getDir());
 					}
-					System.out.println();
 				}
 			}
 		}
@@ -1596,116 +1609,5 @@ public class Cube {
 	public char getColor(int x, int y, int z, char dir) {
 		return cubiePos[x][y][z].getColorOfDir(dir);
 	}
-
-	/*
-	 * Paints the cube using methods from the AWT framework. Paints the cube in an "unfolded" manner.
-	 * @param g A Graphics object
-	 *
-	public void paintComponent(Graphics g) {
-		//NOTE: the logic following may seem confusing because we need to store the colors as *they will be displayed*.
-		//This means, for example, that the left side of the cube will be rotated 90 degrees clockwise such that
-		//when displayed, it looks as if it is directly "connected" to the yellow (U) face.
-
-		int xVal = 50;
-		int yVal = 300;
-		int size = CubePainter.CUBIE_SIZE;
-		//Populate left colors, constant x
-		for(int y = 2; y>=0; y--) {
-			for(int z = 2; z>=0; z--) {
-				g.setColor(getColor(cubiePos[0][y][z].getColorOfDir('L')));
-				g.fillRect(xVal + Math.abs(z-2)*size, yVal+ Math.abs(y-2)*size, size, size);
-				//left[Math.abs(y-2)][Math.abs(z-2)] = cubiePos[0][y][z].getColorOfDir('L');
-			}
-		}
-
-		//Up colors, constant z
-		xVal += size*3;
-		for(int x = 0; x<=2; x++) {
-			for(int y = 2; y>=0; y--) {
-				g.setColor(getColor(cubiePos[x][y][0].getColorOfDir('U')));
-				g.fillRect(xVal + x*size, yVal+ Math.abs(y-2)*size, size, size);
-				//up[Math.abs(y-2)][x] = cubiePos[x][y][0].getColorOfDir('U');
-			}
-		}
-
-		//Front colors, constant y
-		yVal += size*3;
-		for(int z = 0; z<=2; z++) {
-			for(int x = 0; x<=2; x++) {
-				g.setColor(getColor(cubiePos[x][0][z].getColorOfDir('F')));
-				g.fillRect(xVal + x*size, yVal+ z*size, size, size);
-				//front[z][x] = cubiePos[x][0][z].getColorOfDir('F');
-			}
-		}
-
-		//Back colors, constant y
-		yVal -= size*6;
-		for(int x = 0; x<=2; x++) {
-			for(int z = 2; z>=0; z--) {
-				g.setColor(getColor(cubiePos[x][2][z].getColorOfDir('B')));
-				g.fillRect(xVal + x*size, yVal+ Math.abs(z-2)*size, size, size);
-				//back[Math.abs(z-2)][x] = cubiePos[x][2][z].getColorOfDir('B');
-			}
-		}
-
-		//Right colors, constant x
-		xVal += size*3;
-		yVal += size*3;
-		for(int y = 2; y>=0; y--) {
-			for(int z = 0; z<=2; z++) {
-				g.setColor(getColor(cubiePos[2][y][z].getColorOfDir('R')));
-				g.fillRect(xVal + z*size, yVal+ Math.abs(y-2)*size, size, size);
-				//right[Math.abs(y-2)][z] = cubiePos[2][y][z].getColorOfDir('R');
-			}
-		}
-
-		//Down colors, constant z
-		xVal += size*3;
-		for(int x = 2; x>=0; x--) {
-			for(int y = 2; y>=0; y--) {
-				g.setColor(getColor(cubiePos[x][y][2].getColorOfDir('D')));
-				g.fillRect(xVal + Math.abs(x-2)*size, yVal+ Math.abs(y-2)*size, size, size);
-				//down[Math.abs(y-2)][Math.abs(x-2)] = cubiePos[x][y][2].getColorOfDir('D');
-			}
-		}
-
-		((Graphics2D)g).setStroke(CubePainter.s);
-		g.setColor(Color.BLACK);
-		for(int k = 0; k<6; k++) {
-			switch(k) {
-			case(0): xVal = 50; yVal = 300; break;
-			case(1): xVal += size*3; 	break;
-			case(2): yVal += size*3; 	break;
-			case(3): yVal -= size*6;	break;
-			case(4): xVal += size*3;
-			yVal += size*3; 	break;
-			case(5): xVal += size*3; 	break;
-			}
-			for(int i = 0; i<3; i++){
-				for(int j = 0; j<3; j++) {
-					g.drawRect(xVal + j*size, yVal+ i*size, size, size);
-				}
-			}
-		}
-
-	}
-
-	/*
-	 * Returns the appropriate {@code Color} based on a cubie's color for appropriate
-	 * painting in the paintComponent() method.
-	 * @param color the cubie color from the set {'R', 'O', 'B', 'G', 'W', 'Y'}.
-	 * @return corresponding {@code Color} object
-
-	private Color getColor(char color) {
-		switch(color) {
-		case 'W': return Color.WHITE;
-		case 'Y': return Color.YELLOW;
-		case 'B': return Color.BLUE;
-		case 'G': return Color.GREEN;
-		case 'R': return Color.RED;
-		case 'O': return Color.ORANGE;	
-		}
-		return Color.BLACK;	
-	} */
 
 }
