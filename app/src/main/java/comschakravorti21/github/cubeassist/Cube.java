@@ -578,7 +578,7 @@ public class Cube {
 	 */
 	public void reverseMoves(String moves) {
 		for(int i = 0; i<moves.length(); i++) {
-			if(moves.substring(i, i+1).equals(" ")) { //Only check if there is a meaningful character
+			if(!moves.substring(i, i+1).equals(" ")) { //Only check if there is a meaningful character
 				if(i != moves.length()-1) {
 					if(moves.substring(i+1, i+2).compareTo("2") == 0) {
 						//Turning twice ex. U2

@@ -9,11 +9,15 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import static android.R.attr.endY;
 
 /**
  * Created by development on 7/28/17.
@@ -21,17 +25,25 @@ import java.util.concurrent.TimeUnit;
 
 public class CubeView extends View {
 
-    private Timer frameTimer;
     public final static int DELAY = 1500;
+
+    private Timer frameTimer;
+    private TimerTask animationTask;
+    private boolean animationStopped;
 
     private Cube cube = new Cube();
     //Default scramble
     private final String DEFAULT_SCRAMBLE = "F2 D' B U' D L2 B2 R B L' B2 L2 B2 D' R2 F2 D' R2 U' ";
-    private String scramble = new String(DEFAULT_SCRAMBLE),
-            sunflower = new String(), whiteCross = new String(),
-            whiteCorners = new String(), secondLayer = new String(),
-            yellowCross = new String(), OLL = new String(), PLL = new String();
-    private String movesToPerform = new String(), movesPerformed = new String();
+    private String scramble = DEFAULT_SCRAMBLE,
+            sunflower = "",
+            whiteCross = "",
+            whiteCorners = "",
+            secondLayer = "",
+            yellowCross = "",
+            OLL = "",
+            PLL = "";
+    private String movesToPerform = "",
+            movesPerformed = "";
 
     /*
      * Respective stages of the solution w.r.t the phase variable
@@ -122,16 +134,92 @@ public class CubeView extends View {
         cubieSize = (int)dpToPx(22);
         gap = (int)dpToPx(4);
 
-        frameTimer = new Timer();
-        frameTimer.scheduleAtFixedRate(new TimerTask() {
-
+        animationStopped = false;
+        animationTask = new TimerTask() {
             synchronized public void run() {
                 performNextMove();
                 postInvalidate();
             }
+        };
 
-        }, TimeUnit.MILLISECONDS.toMillis(100), TimeUnit.MILLISECONDS.toMillis(100));
+        frameTimer = new Timer();
+        frameTimer.scheduleAtFixedRate(animationTask,
+                TimeUnit.MILLISECONDS.toMillis(500),
+                TimeUnit.MILLISECONDS.toMillis(500));
 
+
+        setOnTouchListener(new OnTouchListener() {
+
+            private final int MIN_DRAG_DISTANCE = 15;
+            private final int MIN_DRAG_TIME = 1000;
+            private long initTime;
+            private float initX;
+            private float initY;
+
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+
+                    case MotionEvent.ACTION_DOWN:
+                        initTime = System.currentTimeMillis();
+                        initX = motionEvent.getX();
+                        initY = motionEvent.getY();
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        float finalX = motionEvent.getX(), finalY = motionEvent.getY();
+                        long eventTime = System.currentTimeMillis() - initTime;
+                        int distance = (int)pxToDp(distance(initX, initY, finalX, finalY));
+                        if(eventTime >= MIN_DRAG_TIME || distance >= MIN_DRAG_DISTANCE) {
+                            if (finalX > initX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the right
+                                performNextMove();
+                                invalidate();
+                            }
+                            else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
+                                boolean flag = false;
+                                int prevIndex = movesIndex;
+                                while(movesIndex > 1 && !flag) {
+                                    movesIndex--;
+                                    if(movesToPerform.substring(movesIndex - 1, movesIndex).equals(" ")) {
+                                        flag = !flag;
+                                    }
+                                }
+                                if(movesIndex == 1) {
+                                    movesIndex = 0;
+                                }
+                                movesPerformed = movesToPerform.substring(0, movesIndex);
+                                if(movesPerformed.length() >= 35) {
+                                    movesPerformed = movesPerformed.substring(movesPerformed.length()-33);
+                                }
+                                cube.reverseMoves(movesToPerform.substring(movesIndex, prevIndex));
+                                invalidate();
+                            }
+                        }
+
+                        else { //Just a click
+                            if (animationStopped) {
+                                startAnimation();
+                            } else if (!animationStopped) {
+                                stopAnimation();
+                            }
+                        }
+
+                        break;
+                }
+                return true;
+            }
+
+            private float distance(float initX, float initY, float finalX, float finalY) {
+                float rise = finalY - initY;
+                float run = finalX - initX;
+                return (float)Math.sqrt(run * run + rise * rise);
+            }
+
+            private float pxToDp(float px) {
+                return px / getResources().getDisplayMetrics().density;
+            }
+
+        });
     }
 
     @Override
@@ -274,11 +362,6 @@ public class CubeView extends View {
 
     }
 
-    private float dpToPx(int dp) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                getResources().getDisplayMetrics());
-    }
-
     private Paint colorToPaint(char color) {
         switch(color) {
             case 'W':
@@ -295,6 +378,35 @@ public class CubeView extends View {
                 return greenPaint;
         }
         return strokePaint;
+    }
+
+    private float dpToPx(int dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                getResources().getDisplayMetrics());
+    }
+
+    public void resetScramble(String s) {
+        scramble = s;
+        cube = new Cube();
+        cube.scramble(scramble);
+        sunflower = cube.makeSunflower();
+        whiteCross = cube.makeWhiteCross();
+        whiteCorners = cube.finishWhiteLayer();
+        secondLayer = cube.insertAllEdges();
+        yellowCross = cube.makeYellowCross();
+        OLL = cube.orientLastLayer();
+        PLL = cube.permuteLastLayer();
+
+        movesToPerform = sunflower;
+        movesPerformed = new String();
+
+        cube = new Cube();
+        cube.scramble(scramble);
+        //If the cube is being scrambled newly after initializing is complete and animation has begun,
+        //be sure to reset all reference indexes
+        movesIndex = 0; phase = 0;
+        phaseString = "Sunflower";
+        invalidate();
     }
 
     /**
@@ -379,27 +491,36 @@ public class CubeView extends View {
         }
     }
 
-    public void resetScramble(String s) {
-        scramble = s;
-        cube = new Cube();
-        cube.scramble(scramble);
-        sunflower = cube.makeSunflower();
-        whiteCross = cube.makeWhiteCross();
-        whiteCorners = cube.finishWhiteLayer();
-        secondLayer = cube.insertAllEdges();
-        yellowCross = cube.makeYellowCross();
-        OLL = cube.orientLastLayer();
-        PLL = cube.permuteLastLayer();
+    public void stopAnimation() {
+        if(!animationStopped) {
+            frameTimer.cancel();
+            animationStopped = true;
+        }
+    }
 
-        movesToPerform = sunflower;
-        movesPerformed = new String();
+    public void startAnimation() {
+        if(animationStopped) {
+            animationTask = new TimerTask() {
+                synchronized public void run() {
+                    performNextMove();
+                    postInvalidate();
+                }
+            };
 
-        cube = new Cube();
-        cube.scramble(scramble);
-        //If the cube is being scrambled newly after initializing is complete and animation has begun,
-        //be sure to reset all reference indexes
-        movesIndex = 0; phase = 0;
-        phaseString = "Sunflower";
-        invalidate();
+            frameTimer = new Timer();
+            frameTimer.scheduleAtFixedRate(animationTask,
+                    TimeUnit.MILLISECONDS.toMillis(500),
+                    TimeUnit.MILLISECONDS.toMillis(500));
+            animationStopped = false;
+        }
+    }
+
+    public void onClick(View view) {
+        if(animationStopped) {
+            startAnimation();
+        }
+        else if(!animationStopped) {
+            stopAnimation();
+        }
     }
 }
