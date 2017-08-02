@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Cube Assist</string>
+    <string name="default_scramble">"R2 F2 R2 D2 B' R2 F L2 D2 F D2 U' B2 R2 B' D2 U' L' U' "</string>
+    <string name="moves_to_perform_tag">To perform:</string>
+    <string name="moves_performed_tag">Performed:</string>
 </resources>

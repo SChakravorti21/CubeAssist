@@ -4,20 +4,17 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-
-import static android.R.attr.endY;
 
 /**
  * Created by development on 7/28/17.
@@ -33,7 +30,7 @@ public class CubeView extends View {
 
     private Cube cube = new Cube();
     //Default scramble
-    private final String DEFAULT_SCRAMBLE = "F2 D' B U' D L2 B2 R B L' B2 L2 B2 D' R2 F2 D' R2 U' ";
+    private final String DEFAULT_SCRAMBLE = getResources().getString(R.string.default_scramble);
     private String scramble = DEFAULT_SCRAMBLE,
             sunflower = "",
             whiteCross = "",
@@ -73,6 +70,7 @@ public class CubeView extends View {
     private int cubieSize;
     private int gap;
 
+    TextView toPerformView, performedView;
 
     public CubeView(Context context) {
         super(context);
@@ -100,7 +98,7 @@ public class CubeView extends View {
 
     private void init() {
         cube = new Cube();
-        resetScramble("R2 F2 R2 D2 B' R2 F L2 D2 F D2 U' B2 R2 B' D2 U' L' U' ");
+        resetScramble(scramble);
 
         bluePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bluePaint.setStyle(Paint.Style.FILL);
@@ -133,20 +131,6 @@ public class CubeView extends View {
 
         cubieSize = (int)dpToPx(22);
         gap = (int)dpToPx(4);
-
-        animationStopped = false;
-        animationTask = new TimerTask() {
-            synchronized public void run() {
-                performNextMove();
-                postInvalidate();
-            }
-        };
-
-        frameTimer = new Timer();
-        frameTimer.scheduleAtFixedRate(animationTask,
-                TimeUnit.MILLISECONDS.toMillis(500),
-                TimeUnit.MILLISECONDS.toMillis(500));
-
 
         setOnTouchListener(new OnTouchListener() {
 
@@ -222,13 +206,37 @@ public class CubeView extends View {
         });
     }
 
+    public void onViewCreated() {
+        final SolutionActivity activity = (SolutionActivity)getContext();
+
+        animationStopped = false;
+        animationTask = new TimerTask() {
+            synchronized public void run() {
+                performNextMove();
+                postInvalidate();
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                                movesPerformed.trim());
+                    }
+                });
+            }
+        };
+
+        frameTimer = new Timer();
+        frameTimer.scheduleAtFixedRate(animationTask,
+                TimeUnit.MILLISECONDS.toMillis(DELAY),
+                TimeUnit.MILLISECONDS.toMillis(DELAY));
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         //Paint Reds
-        int xVal = gap*5;
-        int yVal = (cubieSize + gap)*3 + gap*20;
+        int xVal = gap;
+        int yVal = (cubieSize + gap)*3 + gap*3;
         for(int y = 2; y>=0; y--) {
             for(int z = 2; z>=0; z--) {
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(z-2),
@@ -486,7 +494,9 @@ public class CubeView extends View {
                     movesToPerform = " ";
                     phaseString = "Solved"; phase--;
                     frameTimer.cancel();
+                    break;
             }
+            movesPerformed = "";
             phase++; movesIndex = 0;
         }
     }
@@ -500,27 +510,27 @@ public class CubeView extends View {
 
     public void startAnimation() {
         if(animationStopped) {
+            final SolutionActivity activity = (SolutionActivity)getContext();
+
             animationTask = new TimerTask() {
                 synchronized public void run() {
                     performNextMove();
                     postInvalidate();
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                                    movesPerformed.trim());
+                        }
+                    });
                 }
             };
 
             frameTimer = new Timer();
             frameTimer.scheduleAtFixedRate(animationTask,
-                    TimeUnit.MILLISECONDS.toMillis(500),
-                    TimeUnit.MILLISECONDS.toMillis(500));
+                    TimeUnit.MILLISECONDS.toMillis(DELAY),
+                    TimeUnit.MILLISECONDS.toMillis(DELAY));
             animationStopped = false;
-        }
-    }
-
-    public void onClick(View view) {
-        if(animationStopped) {
-            startAnimation();
-        }
-        else if(!animationStopped) {
-            stopAnimation();
         }
     }
 }

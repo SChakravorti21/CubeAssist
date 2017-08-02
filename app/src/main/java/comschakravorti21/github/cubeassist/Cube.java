@@ -973,15 +973,11 @@ public class Cube {
 	public String finishWhiteLayer() {
 		String moves = "";
 		//At least check once for corners to be inserted/fixed, and repeat as necessary
-		moves+=insertCornersInU();
-		moves+="\n";
-		moves+=insertMisorientedCorners();
-		moves+="\n";
+		moves+=insertCornersInU() + " ";
+		moves+=insertMisorientedCorners() + " ";
 		while(whiteCornerinU()) {
-			moves+=insertCornersInU();
-			moves+="\n";
-			moves+=insertMisorientedCorners();
-			moves+="\n";
+			moves+=insertCornersInU() + " ";
+			moves+=insertMisorientedCorners() + " ";
 		}
 		return optimizeMoves(moves);
 	}
@@ -1148,15 +1144,11 @@ public class Cube {
 	public String insertAllEdges() {
 		String moves = "";
 		//At least check once for edges to be inserted/fixed, and repeat as necessary
-		moves+=insertEdgesInU();
-		moves+="\n";
-		moves+=insertMisorientedEdges();
-		moves+="\n";
+		moves+=insertEdgesInU() + " ";
+		moves+=insertMisorientedEdges() + " ";
 		while(nonYellowEdgesInU()) {
-			moves+=insertEdgesInU();
-			moves+="\n";
-			moves+=insertMisorientedEdges();
-			moves+="\n";
+			moves+=insertEdgesInU() + " ";
+			moves+=insertMisorientedEdges() + " ";
 		}
 		return optimizeMoves(moves);
 	}
@@ -1357,7 +1349,7 @@ public class Cube {
 			}
 			moves += performMoves("F R U R' U' F' ");
 		}
-		return optimizeMoves(moves);
+		return moves;
 	}
 
 	/**
@@ -1397,7 +1389,7 @@ public class Cube {
 			//Re-check the number of corners oriented
 			numOriented = numYellowCornersOriented();
 		}
-		return optimizeMoves(moves);
+		return moves;
 	}
 
 	/**
@@ -1457,7 +1449,7 @@ public class Cube {
 			moves += performMoves("U ");
 		}
 
-		return optimizeMoves(moves);
+		return moves;
 	}
 
 	/**

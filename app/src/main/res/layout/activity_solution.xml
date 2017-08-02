@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/solution_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="comschakravorti21.github.cubeassist.SolutionActivity">
+
+    <TextView
+        android:id="@+id/scramble_view"
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="@string/default_scramble"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/textColorPrimary"
+        android:textSize="20sp" />
+
+    <comschakravorti21.github.cubeassist.CubeView
+        android:id="@+id/cube_view"
+        android:layout_width="330dp"
+        android:layout_height="250dp"
+        android:layout_below="@id/scramble_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"></comschakravorti21.github.cubeassist.CubeView>
+
+    <TextView
+        android:id="@+id/moves_to_perform_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cube_view"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="@string/moves_to_perform_tag"
+        android:textAllCaps="true" />
+
+    <TextView
+        android:id="@+id/moves_performed_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/moves_to_perform_indicator"
+        android:layout_marginLeft="16dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="@string/moves_performed_tag"
+        android:textAllCaps="true" />
+
+    <TextView
+        android:id="@+id/moves_to_perform"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_alignBaseline="@+id/moves_to_perform_indicator"
+        android:layout_alignBottom="@+id/moves_to_perform_indicator"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_toEndOf="@+id/moves_to_perform_indicator"
+        android:ellipsize="none"
+        android:fadingEdgeLength="10dp"
+        android:fontFamily="sans-serif-condensed"
+        android:maxLines="1"
+        android:requiresFadingEdge="horizontal" />
+
+    <TextView
+        android:id="@+id/moves_performed"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_alignBaseline="@+id/moves_performed_indicator"
+        android:layout_alignBottom="@+id/moves_performed_indicator"
+        android:layout_alignStart="@+id/moves_to_perform"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_toEndOf="@+id/moves_performed_indicator"
+        android:ellipsize="none"
+        android:fadingEdgeLength="10dp"
+        android:fontFamily="sans-serif-condensed"
+        android:maxLines="1"
+        android:requiresFadingEdge="horizontal" />
+
+</RelativeLayout>
