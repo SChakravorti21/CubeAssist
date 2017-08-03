@@ -131,6 +131,7 @@ public class CubeView extends View {
 
         cubieSize = (int)dpToPx(22);
         gap = (int)dpToPx(4);
+        animationStopped = true; //Wait until the user clicks on the cube to start animation
 
         setOnTouchListener(new OnTouchListener() {
 
@@ -158,6 +159,15 @@ public class CubeView extends View {
                             if (finalX > initX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the right
                                 performNextMove();
                                 invalidate();
+
+                                final SolutionActivity activity = (SolutionActivity)getContext();
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                                                movesPerformed.trim());
+                                    }
+                                });
                             }
                             else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
                                 boolean flag = false;
@@ -177,6 +187,15 @@ public class CubeView extends View {
                                 }
                                 cube.reverseMoves(movesToPerform.substring(movesIndex, prevIndex));
                                 invalidate();
+
+                                final SolutionActivity activity = (SolutionActivity)getContext();
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                                                movesPerformed.trim());
+                                    }
+                                });
                             }
                         }
 
@@ -204,30 +223,6 @@ public class CubeView extends View {
             }
 
         });
-    }
-
-    public void onViewCreated() {
-        final SolutionActivity activity = (SolutionActivity)getContext();
-
-        animationStopped = false;
-        animationTask = new TimerTask() {
-            synchronized public void run() {
-                performNextMove();
-                postInvalidate();
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                movesPerformed.trim());
-                    }
-                });
-            }
-        };
-
-        frameTimer = new Timer();
-        frameTimer.scheduleAtFixedRate(animationTask,
-                TimeUnit.MILLISECONDS.toMillis(DELAY),
-                TimeUnit.MILLISECONDS.toMillis(DELAY));
     }
 
     @Override

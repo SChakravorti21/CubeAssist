@@ -12,7 +12,6 @@ public class SolutionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_solution);
 
         CubeView view = (CubeView)findViewById(R.id.cube_view);
-        view.onViewCreated();
     }
 
     public void updateMoves(String movesToPerform, String movesPerformed) {
