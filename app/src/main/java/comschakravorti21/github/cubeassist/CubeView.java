@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -16,13 +18,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import static java.security.AccessController.getContext;
+
 /**
  * Created by development on 7/28/17.
  */
 
 public class CubeView extends View {
 
-    public final static int DELAY = 1500;
+    public final static int DELAY = 300;
 
     private Timer frameTimer;
     private TimerTask animationTask;
@@ -39,6 +43,7 @@ public class CubeView extends View {
             yellowCross = "",
             OLL = "",
             PLL = "";
+    private String[] moveSet;
     private String movesToPerform = "",
             movesPerformed = "";
 
@@ -160,14 +165,8 @@ public class CubeView extends View {
                                 performNextMove();
                                 invalidate();
 
-                                final SolutionActivity activity = (SolutionActivity)getContext();
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                                movesPerformed.trim());
-                                    }
-                                });
+                                UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                                updateMoves.execute(getContext());
                             }
                             else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
                                 boolean flag = false;
@@ -188,14 +187,9 @@ public class CubeView extends View {
                                 cube.reverseMoves(movesToPerform.substring(movesIndex, prevIndex));
                                 invalidate();
 
-                                final SolutionActivity activity = (SolutionActivity)getContext();
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                                movesPerformed.trim());
-                                    }
-                                });
+
+                                UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                                updateMoves.execute(getContext());
                             }
                         }
 
@@ -223,6 +217,7 @@ public class CubeView extends View {
             }
 
         });
+
     }
 
     @Override
@@ -410,6 +405,9 @@ public class CubeView extends View {
         movesIndex = 0; phase = 0;
         phaseString = "Sunflower";
         invalidate();
+
+        moveSet = new String[] {sunflower, whiteCross, whiteCorners,
+                secondLayer, yellowCross, OLL, PLL, " "};
     }
 
     /**
@@ -468,31 +466,62 @@ public class CubeView extends View {
         if(movesIndex >= movesToPerform.length()) {
             switch(phase) {
                 case 0:
-                    movesToPerform = whiteCross;
                     phaseString = "White Cross"; break;
                 case 1:
-                    movesToPerform = whiteCorners;
                     phaseString = "White Corners"; break;
                 case 2:
-                    movesToPerform = secondLayer;
                     phaseString = "Second Layer"; break;
                 case 3:
-                    movesToPerform = yellowCross;
                     phaseString = "Yellow Cross";break;
                 case 4:
-                    movesToPerform = OLL;
                     phaseString = "OLL";break;
                 case 5:
-                    movesToPerform = PLL;
                     phaseString = "PLL";break;
                 case 6:
-                    movesToPerform = " ";
-                    phaseString = "Solved"; phase--;
+                    phaseString = "Solved";
                     frameTimer.cancel();
                     break;
             }
             movesPerformed = "";
             phase++; movesIndex = 0;
+            movesToPerform = moveSet[phase];
+        }
+    }
+
+    public void skipToPhase(int skipTo) {
+        if(skipTo > phase) {
+            cube.performMoves(movesToPerform.substring(movesIndex));
+            phase++;
+            movesToPerform = moveSet[phase];
+
+            for(; phase < skipTo; phase++) {
+                cube.performMoves(moveSet[phase]);
+            }
+            invalidate();
+
+            movesPerformed = "";
+            movesIndex = 0;
+            movesToPerform = moveSet[phase];
+
+            UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+            updateMoves.execute(getContext());
+        }
+        else {
+            cube = new Cube();
+            cube.scramble(scramble);
+            phase = 0;
+
+            for(; phase < skipTo; phase++) {
+                cube.performMoves(moveSet[phase]);
+            }
+            invalidate();
+
+            movesPerformed = "";
+            movesIndex = 0;
+            movesToPerform = moveSet[phase];
+
+            UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+            updateMoves.execute(getContext());
         }
     }
 
@@ -505,19 +534,14 @@ public class CubeView extends View {
 
     public void startAnimation() {
         if(animationStopped) {
-            final SolutionActivity activity = (SolutionActivity)getContext();
 
             animationTask = new TimerTask() {
                 synchronized public void run() {
                     performNextMove();
                     postInvalidate();
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                    movesPerformed.trim());
-                        }
-                    });
+
+                    UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                    updateMoves.execute(getContext());
                 }
             };
 
@@ -528,4 +552,40 @@ public class CubeView extends View {
             animationStopped = false;
         }
     }
+
+
+    private class UpdateUI extends AsyncTask<Context, Void, SolutionActivity> {
+        final static int UPDATE_MOVES_ON_UI = 1;
+        private int taskType;
+
+        public UpdateUI(int task) {
+            taskType = task;
+        }
+
+        @Override
+        protected SolutionActivity doInBackground(Context... contexts) {
+            SolutionActivity activity = (SolutionActivity)contexts[0];
+
+            return activity;
+        }
+
+        @Override
+        protected void onPostExecute(SolutionActivity activity) {
+            super.onPostExecute(activity);
+
+            if(taskType == UPDATE_MOVES_ON_UI) {
+                final SolutionActivity solutionActivity = activity;
+
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        solutionActivity.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                                movesPerformed.trim());
+                    }
+                });
+            }
+        }
+    }
 }
+
+
