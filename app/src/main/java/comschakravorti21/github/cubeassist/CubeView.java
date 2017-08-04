@@ -24,7 +24,7 @@ import static comschakravorti21.github.cubeassist.Cube.generateRandScramble;
 
 public class CubeView extends View {
 
-    public final static int DELAY = 300;
+    public final static int DELAY = 1500;
 
     private Timer frameTimer;
     private TimerTask animationTask;
@@ -479,7 +479,7 @@ public class CubeView extends View {
         }
         //Ensure that movesPerformed does not overflow out of the graphical interface
         if(movesPerformed.length() >= 35) {
-            movesPerformed = movesPerformed.substring(movesPerformed.length()-33);
+            movesPerformed = movesPerformed.substring(movesPerformed.length()-30);
         }
     }
 
@@ -522,13 +522,16 @@ public class CubeView extends View {
         }
     }
 
+    public int getPhase() {
+        return phase;
+    }
+
     public void skipToPhase(int skipTo) {
         UpdateUI skipMoves = new UpdateUI(UpdateUI.SKIP_PHASES, phase, skipTo);
         skipMoves.execute(getContext());
 
         UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
         updateMoves.execute(getContext());
-
     }
 
     public void stopAnimation() {
@@ -574,12 +577,18 @@ public class CubeView extends View {
             currentPhase = curPhase;
             skipTo = skipToPhase;
         }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
         @Override
         protected SolutionActivity doInBackground(Context... contexts) {
             SolutionActivity activity = (SolutionActivity)contexts[0];
 
-            if(taskType == SKIP_PHASES) {
-                if(skipTo > currentPhase) {
+            if(taskType == SKIP_PHASES) { //At 7 the solve is complete
+                if(skipTo > currentPhase && currentPhase < 7) {
                     cube.performMoves(movesToPerform.substring(movesIndex));
                     currentPhase++;
                     movesToPerform = moveSet[phase];
@@ -592,13 +601,12 @@ public class CubeView extends View {
                     movesIndex = 0;
                     movesToPerform = moveSet[currentPhase];
                 }
-                else {
+                else if (skipTo < currentPhase && currentPhase > 0){
                     //Log.d("Tried skipping", "true");
                     cube = new Cube();
                     cube.scramble(scramble);
-                    currentPhase = 0;
 
-                    for(; currentPhase < skipTo; currentPhase++) {
+                    for(currentPhase = 0; currentPhase < skipTo; currentPhase++) {
                         cube.performMoves(moveSet[currentPhase]);
                     }
 
@@ -606,15 +614,14 @@ public class CubeView extends View {
                     movesIndex = 0;
                     movesToPerform = moveSet[currentPhase];
                 }
-
                 phase = currentPhase;
             }
+
             return activity;
         }
 
         @Override
         protected void onPostExecute(SolutionActivity activity) {
-            super.onPostExecute(activity);
 
             if(taskType == SKIP_PHASES) {
                 postInvalidate();
@@ -622,13 +629,42 @@ public class CubeView extends View {
             else if(taskType == UPDATE_MOVES_ON_UI) {
                 final SolutionActivity solutionActivity = activity;
 
+                switch(phase) {
+                    case 0:
+                        phaseString = "Sunflower";
+                        break;
+                    case 1:
+                        phaseString = "White Cross";
+                        break;
+                    case 2:
+                        phaseString = "White Corners";
+                        break;
+                    case 3:
+                        phaseString = "Second Layer";
+                        break;
+                    case 4:
+                        phaseString = "Yellow Cross";
+                        break;
+                    case 5:
+                        phaseString = "OLL";
+                        break;
+                    case 6:
+                        phaseString = "PLL";
+                        break;
+                    case 7:
+                        phaseString = "Solved";
+                        break;
+                }
+
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         solutionActivity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                movesPerformed.trim());
+                                movesPerformed.trim(), phaseString);
                     }
                 });
+
+                super.onPostExecute(activity);
             }
         }
     }

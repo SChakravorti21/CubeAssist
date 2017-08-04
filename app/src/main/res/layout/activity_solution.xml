@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    android:id="@+id/solution_layout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/solution_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="comschakravorti21.github.cubeassist.SolutionActivity">
+    tools:context="comschakravorti21.github.cubeassist.SolutionActivity"
+    android:animateLayoutChanges="true">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"/>
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <TextView
         android:id="@+id/scramble_view"
         android:layout_width="wrap_content"
-        android:layout_height="45dp"
-        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content"
         android:layout_below="@id/toolbar"
-        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="16dp"
@@ -33,16 +33,54 @@
         android:text="@string/default_scramble"
         android:textAlignment="center"
         android:textAllCaps="true"
-        android:textColor="@color/textColorPrimary"
-        android:textSize="20sp" />
+        android:textColor="@color/textColorSecondary"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:id="@+id/phase_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:layout_below="@id/scramble_view">
+
+        <ImageButton
+            android:id="@+id/rewind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_chevron_left"
+            android:hapticFeedbackEnabled="true"
+            android:onClick="onClick"/>
+
+        <TextView
+            android:id="@+id/phase_view"
+            android:text="@string/initial_phase"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="20dp"/>
+
+        <ImageButton
+            android:id="@+id/skip_forward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_chevron_right"
+            android:hapticFeedbackEnabled="true"
+            android:onClick="onClick"/>
+
+    </LinearLayout>
 
     <comschakravorti21.github.cubeassist.CubeView
         android:id="@+id/cube_view"
         android:layout_width="330dp"
         android:layout_height="250dp"
-        android:layout_below="@id/scramble_view"
+        android:layout_below="@id/phase_switch"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"></comschakravorti21.github.cubeassist.CubeView>
+        android:layout_marginTop="16dp" />
 
     <TextView
         android:id="@+id/moves_to_perform_indicator"
@@ -69,7 +107,7 @@
     <TextView
         android:id="@+id/moves_to_perform"
         android:layout_width="match_parent"
-        android:layout_height="18dp"
+        android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/moves_to_perform_indicator"
         android:layout_alignBottom="@+id/moves_to_perform_indicator"
         android:layout_marginEnd="16dp"
@@ -80,12 +118,14 @@
         android:fadingEdgeLength="10dp"
         android:fontFamily="sans-serif-condensed"
         android:maxLines="1"
-        android:requiresFadingEdge="horizontal" />
+        android:requiresFadingEdge="horizontal"
+        android:textColor="@color/textColorPrimary"
+        android:textSize="20dp" />
 
     <TextView
         android:id="@+id/moves_performed"
         android:layout_width="match_parent"
-        android:layout_height="18dp"
+        android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/moves_performed_indicator"
         android:layout_alignBottom="@+id/moves_performed_indicator"
         android:layout_alignStart="@+id/moves_to_perform"
@@ -96,6 +136,8 @@
         android:fadingEdgeLength="10dp"
         android:fontFamily="sans-serif-condensed"
         android:maxLines="1"
-        android:requiresFadingEdge="horizontal" />
+        android:requiresFadingEdge="horizontal"
+        android:textColor="@color/textColorPrimary"
+        android:textSize="20dp" />
 
 </RelativeLayout>
