@@ -160,11 +160,13 @@ public class CubeView extends View {
                         int distance = (int)pxToDp(distance(initX, initY, finalX, finalY));
                         if(eventTime >= MIN_DRAG_TIME || distance >= MIN_DRAG_DISTANCE) {
                             if (finalX > initX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the right
-                                performNextMove();
-                                invalidate();
+                                if(phase < 7) { //Only do stuff if the solve is not complete yet
+                                    performNextMove();
+                                    invalidate();
 
-                                UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
-                                updateMoves.execute(getContext());
+                                    UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                                    updateMoves.execute(getContext());
+                                }
                             }
                             else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
                                 boolean flag = false;
@@ -215,7 +217,7 @@ public class CubeView extends View {
             }
 
         });
-        
+
         UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
         updateMoves.execute(getContext());
     }
@@ -503,13 +505,20 @@ public class CubeView extends View {
                 case 5:
                     phaseString = "PLL";break;
                 case 6:
-                    phaseString = "Solved";
-                    frameTimer.cancel();
+                    //Failsafe to prevent app from crashing if the user tries to fast forward
+                    //once the solve is finished
+                    if(!animationStopped) {
+                        phaseString = "Solved";
+                        stopAnimation();
+                    }
                     break;
             }
-            movesPerformed = "";
-            phase++; movesIndex = 0;
-            movesToPerform = moveSet[phase];
+            if(phase < 7) {
+                movesPerformed = "";
+                phase++;
+                movesIndex = 0;
+                movesToPerform = moveSet[phase];
+            }
         }
     }
 
