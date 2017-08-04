@@ -5,10 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,7 +16,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import static java.security.AccessController.getContext;
+import static comschakravorti21.github.cubeassist.Cube.generateRandScramble;
 
 /**
  * Created by development on 7/28/17.
@@ -217,7 +215,9 @@ public class CubeView extends View {
             }
 
         });
-
+        
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
     }
 
     @Override
@@ -396,7 +396,7 @@ public class CubeView extends View {
         PLL = cube.permuteLastLayer();
 
         movesToPerform = sunflower;
-        movesPerformed = new String();
+        movesPerformed = "";
 
         cube = new Cube();
         cube.scramble(scramble);
@@ -408,6 +408,31 @@ public class CubeView extends View {
 
         moveSet = new String[] {sunflower, whiteCross, whiteCorners,
                 secondLayer, yellowCross, OLL, PLL, " "};
+
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
+    }
+
+    public void resetCurrentScramble() {
+        cube = new Cube();
+        cube.scramble(scramble);
+
+        movesToPerform = sunflower;
+        movesPerformed = "";
+
+        movesIndex = 0; phase = 0;
+        phaseString = "Sunflower";
+        invalidate();
+
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
+    }
+
+    public String randScramble() {
+        scramble = Cube.generateRandScramble();
+        resetScramble(scramble);
+
+        return scramble;
     }
 
     /**
@@ -489,40 +514,12 @@ public class CubeView extends View {
     }
 
     public void skipToPhase(int skipTo) {
-        if(skipTo > phase) {
-            cube.performMoves(movesToPerform.substring(movesIndex));
-            phase++;
-            movesToPerform = moveSet[phase];
+        UpdateUI skipMoves = new UpdateUI(UpdateUI.SKIP_PHASES, phase, skipTo);
+        skipMoves.execute(getContext());
 
-            for(; phase < skipTo; phase++) {
-                cube.performMoves(moveSet[phase]);
-            }
-            invalidate();
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
 
-            movesPerformed = "";
-            movesIndex = 0;
-            movesToPerform = moveSet[phase];
-
-            UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
-            updateMoves.execute(getContext());
-        }
-        else {
-            cube = new Cube();
-            cube.scramble(scramble);
-            phase = 0;
-
-            for(; phase < skipTo; phase++) {
-                cube.performMoves(moveSet[phase]);
-            }
-            invalidate();
-
-            movesPerformed = "";
-            movesIndex = 0;
-            movesToPerform = moveSet[phase];
-
-            UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
-            updateMoves.execute(getContext());
-        }
     }
 
     public void stopAnimation() {
@@ -534,7 +531,6 @@ public class CubeView extends View {
 
     public void startAnimation() {
         if(animationStopped) {
-
             animationTask = new TimerTask() {
                 synchronized public void run() {
                     performNextMove();
@@ -556,16 +552,54 @@ public class CubeView extends View {
 
     private class UpdateUI extends AsyncTask<Context, Void, SolutionActivity> {
         final static int UPDATE_MOVES_ON_UI = 1;
+        final static int SKIP_PHASES = 2;
         private int taskType;
+        private int currentPhase, skipTo;
 
         public UpdateUI(int task) {
             taskType = task;
         }
 
+        public UpdateUI(int task, int curPhase, int skipToPhase) {
+            taskType = task;
+            currentPhase = curPhase;
+            skipTo = skipToPhase;
+        }
         @Override
         protected SolutionActivity doInBackground(Context... contexts) {
             SolutionActivity activity = (SolutionActivity)contexts[0];
 
+            if(taskType == SKIP_PHASES) {
+                if(skipTo > currentPhase) {
+                    cube.performMoves(movesToPerform.substring(movesIndex));
+                    currentPhase++;
+                    movesToPerform = moveSet[phase];
+
+                    for(; currentPhase < skipTo; currentPhase++) {
+                        cube.performMoves(moveSet[currentPhase]);
+                    }
+
+                    movesPerformed = "";
+                    movesIndex = 0;
+                    movesToPerform = moveSet[currentPhase];
+                }
+                else {
+                    //Log.d("Tried skipping", "true");
+                    cube = new Cube();
+                    cube.scramble(scramble);
+                    currentPhase = 0;
+
+                    for(; currentPhase < skipTo; currentPhase++) {
+                        cube.performMoves(moveSet[currentPhase]);
+                    }
+
+                    movesPerformed = "";
+                    movesIndex = 0;
+                    movesToPerform = moveSet[currentPhase];
+                }
+
+                phase = currentPhase;
+            }
             return activity;
         }
 
@@ -573,7 +607,10 @@ public class CubeView extends View {
         protected void onPostExecute(SolutionActivity activity) {
             super.onPostExecute(activity);
 
-            if(taskType == UPDATE_MOVES_ON_UI) {
+            if(taskType == SKIP_PHASES) {
+                postInvalidate();
+            }
+            else if(taskType == UPDATE_MOVES_ON_UI) {
                 final SolutionActivity solutionActivity = activity;
 
                 activity.runOnUiThread(new Runnable() {

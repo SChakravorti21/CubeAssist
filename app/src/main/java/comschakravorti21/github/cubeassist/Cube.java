@@ -709,7 +709,7 @@ public class Cube {
 	 * the allowed set of face moves, ensuring that no move is the same as the two moves prior to it.
 	 * @return a random scramble
 	 */
-	public String randScramble() {
+	public static String generateRandScramble() {
 		String scramble = "";
 		char[] possMoves = new char[] {'U', 'D', 'R', 'L', 'F', 'B'}; //The allowed set of moves
 		char prevMove = possMoves[(int)(Math.random()*6)]; //Pick random moves as prevMove and secondLastMove for now
@@ -732,7 +732,7 @@ public class Cube {
 				numMoves++;
 			}
 		}
-		scramble(scramble); //perform the scramble on the cube
+		//scramble(scramble); //perform the scramble on the cube
 		return scramble;
 	}
 	
