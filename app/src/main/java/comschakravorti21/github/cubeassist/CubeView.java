@@ -29,6 +29,7 @@ public class CubeView extends View {
     private Timer frameTimer;
     private TimerTask animationTask;
     private boolean animationStopped;
+    private int speedMultiplier;
 
     private Cube cube = new Cube();
     //Default scramble
@@ -132,6 +133,7 @@ public class CubeView extends View {
         strokePaint.setColor(Color.BLACK);
         strokePaint.setStrokeWidth(6);
 
+        speedMultiplier = 1;
         cubieSize = (int)dpToPx(22);
         gap = (int)dpToPx(4);
         animationStopped = true; //Wait until the user clicks on the cube to start animation
@@ -194,8 +196,8 @@ public class CubeView extends View {
                         }
 
                         else { //Just a click
-                            if (animationStopped) {
-                                startAnimation();
+                            if (animationStopped && phase < 7) {
+                                startAnimation(speedMultiplier);
                             } else if (!animationStopped) {
                                 stopAnimation();
                             }
@@ -541,7 +543,17 @@ public class CubeView extends View {
         }
     }
 
-    public void startAnimation() {
+    public void setSpeedMultiplier(int speedMultiplier) {
+        this.speedMultiplier = speedMultiplier;
+    }
+
+    public boolean getAnimationStopped() {
+        return animationStopped;
+    }
+
+    public void startAnimation(int multiplySpeed) {
+        speedMultiplier = multiplySpeed;
+
         if(animationStopped) {
             animationTask = new TimerTask() {
                 synchronized public void run() {
@@ -555,12 +567,11 @@ public class CubeView extends View {
 
             frameTimer = new Timer();
             frameTimer.scheduleAtFixedRate(animationTask,
-                    TimeUnit.MILLISECONDS.toMillis(DELAY),
-                    TimeUnit.MILLISECONDS.toMillis(DELAY));
+                    TimeUnit.MILLISECONDS.toMillis(DELAY/speedMultiplier),
+                    TimeUnit.MILLISECONDS.toMillis(DELAY/speedMultiplier));
             animationStopped = false;
         }
     }
-
 
     private class UpdateUI extends AsyncTask<Context, Void, SolutionActivity> {
         final static int UPDATE_MOVES_ON_UI = 1;

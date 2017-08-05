@@ -1,18 +1,21 @@
 package comschakravorti21.github.cubeassist;
 
+import android.content.Context;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class SolutionActivity extends AppCompatActivity implements View.OnClickListener,
-        EditScrambleDialog.EditScrambleDialogListener{
+        EditScrambleDialog.EditScrambleDialogListener, SeekBar.OnSeekBarChangeListener{
 
     CubeView cubeView;
 
@@ -25,8 +28,12 @@ public class SolutionActivity extends AppCompatActivity implements View.OnClickL
         setSupportActionBar(toolbar);
         //getSupportActionBar().setDisplayOptions(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         //getSupportActionBar().setDisplayShowTitleEnabled(false);
-
         cubeView = (CubeView)findViewById(R.id.cube_view);
+        findViewById(R.id.rewind).setOnClickListener(this);
+        findViewById(R.id.skip_forward).setOnClickListener(this);
+        SeekBar seekBar = (SeekBar)findViewById(R.id.speed_adjuster);
+        seekBar.setOnSeekBarChangeListener(this);
+        seekBar.setMax(14);
     }
 
     @Override
@@ -88,6 +95,26 @@ public class SolutionActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
+
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (cubeView.getAnimationStopped()) {
+            cubeView.setSpeedMultiplier(1 + progress); //Avoid division by 0, min is 1
+        } else {
+            cubeView.stopAnimation();
+            cubeView.startAnimation(1 + progress);
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
 }
