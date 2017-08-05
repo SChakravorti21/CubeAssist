@@ -8,17 +8,6 @@
     tools:context="comschakravorti21.github.cubeassist.SolutionActivity"
     android:animateLayoutChanges="true">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
     <TextView
         android:id="@+id/scramble_view"
         android:layout_width="wrap_content"
@@ -71,7 +60,7 @@
 
     </LinearLayout>
 
-    <comschakravorti21.github.cubeassist.CubeView
+    <comschakravorti21.github.cubeassist.CubeViewCopy
         android:id="@+id/cube_view"
         android:layout_width="330dp"
         android:layout_height="250dp"

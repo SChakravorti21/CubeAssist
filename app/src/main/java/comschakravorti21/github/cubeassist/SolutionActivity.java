@@ -26,8 +26,7 @@ public class SolutionActivity extends AppCompatActivity implements View.OnClickL
 
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setDisplayOptions(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-        //getSupportActionBar().setDisplayShowTitleEnabled(false);
+
         cubeView = (CubeView)findViewById(R.id.cube_view);
         findViewById(R.id.rewind).setOnClickListener(this);
         findViewById(R.id.skip_forward).setOnClickListener(this);
