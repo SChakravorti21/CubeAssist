@@ -1,16 +1,12 @@
 package comschakravorti21.github.cubeassist;
 
-import android.content.Context;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -37,7 +33,7 @@ public class SolutionActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_solution, menu);
+        getMenuInflater().inflate(R.menu.menu_text_solution, menu);
         return super.onCreateOptionsMenu(menu);
     }
 

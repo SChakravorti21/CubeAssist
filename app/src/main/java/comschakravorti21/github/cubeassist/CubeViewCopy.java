@@ -596,6 +596,9 @@ public class CubeViewCopy extends View {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            if(taskType == SKIP_PHASES) {
+                stopAnimation();
+            }
         }
 
         @Override
@@ -672,8 +675,10 @@ public class CubeViewCopy extends View {
                 TextSolutionFragment fragment = (TextSolutionFragment)((AppCompatActivity)getContext())
                         .getSupportFragmentManager().findFragmentByTag("Text Solution Fragment");
 
-                fragment.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                movesPerformed.trim(), phaseString);
+                if(fragment != null) {
+                    fragment.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                            movesPerformed.trim(), phaseString);
+                }
 
                 super.onPostExecute(activity);
             }
