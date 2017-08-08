@@ -5,13 +5,13 @@
 
     <item
         android:id="@+id/action_reset"
-        android:icon="@drawable/ic_replay_white"
+        android:icon="@drawable/ic_replay_black"
         android:title="@string/reset_action"
         app:showAsAction="always"/>
 
     <item
         android:id="@+id/action_random"
-        android:icon="@drawable/ic_casino_white"
+        android:icon="@drawable/ic_casino_black"
         android:title="@string/random_scramble_action"
         app:showAsAction="ifRoom"/>
 

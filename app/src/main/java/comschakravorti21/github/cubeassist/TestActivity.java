@@ -65,29 +65,6 @@ public class TestActivity extends AppCompatActivity implements EditScrambleDialo
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        if(currentMode.equals(TEXT_SCRAMBLE)) {
-            menuInflater.inflate(R.menu.menu_text_solution, menu);
-        }
-        else if(currentMode.equals(COLOR_INPUT)) {
-            menuInflater.inflate(R.menu.menu_color_solution, menu);
-        }
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Fragment frag = getSupportFragmentManager().findFragmentById(R.id.container);
-        if(frag instanceof TextSolutionFragment) {
-            frag.onOptionsItemSelected(item);
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -128,22 +105,20 @@ public class TestActivity extends AppCompatActivity implements EditScrambleDialo
                 case R.id.text_scramble:
                     if(!currentMode.equals(TEXT_SCRAMBLE)) {
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, new TextSolutionFragment(), "Text Input")
+                                .replace(R.id.container, new TextSolutionFragment(), "Text Solution Fragment")
                                 .addToBackStack(null)
                                 .commit();
                         currentMode = TEXT_SCRAMBLE;
-                        invalidateOptionsMenu();
                         drawerLayout.closeDrawers();
                     }
                     break;
                 case R.id.color_input:
                     if(!currentMode.equals(COLOR_INPUT)) {
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, new ColorInputSolutionFragment(), "Color Input")
+                                .replace(R.id.container, new ColorInputSolutionFragment(), "Color Input Fragment")
                                 .addToBackStack(null)
                                 .commit();
                         currentMode = COLOR_INPUT;
-                        invalidateOptionsMenu();
                         drawerLayout.closeDrawers();
                     }
                     break;

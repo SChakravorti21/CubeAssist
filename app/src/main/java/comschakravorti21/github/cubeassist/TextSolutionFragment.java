@@ -1,5 +1,6 @@
 package comschakravorti21.github.cubeassist;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +26,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -43,6 +47,12 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
         SeekBar seekBar = (SeekBar)rootView.findViewById(R.id.speed_adjuster);
         seekBar.setOnSeekBarChangeListener(this);
         seekBar.setMax(14);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_text_solution, menu);
     }
 
     @Override

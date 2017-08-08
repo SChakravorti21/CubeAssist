@@ -6,6 +6,7 @@
     android:layout_marginBottom="8dp">
 
     <EditText
+        android:textColor="@android:color/black"
         android:layout_margin="16dp"
         android:id="@+id/scramble_editor"
         android:layout_width="match_parent"
