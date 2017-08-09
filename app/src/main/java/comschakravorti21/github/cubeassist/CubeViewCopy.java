@@ -2,12 +2,14 @@ package comschakravorti21.github.cubeassist;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -107,29 +109,30 @@ public class CubeViewCopy extends View {
         cube = new Cube();
         resetScramble(scramble);
 
+        Context context = getContext();
         bluePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bluePaint.setStyle(Paint.Style.FILL);
-        bluePaint.setColor(Color.parseColor("#03A9F4"));
+        bluePaint.setColor(ContextCompat.getColor(context, R.color.cubeBlue));
 
         greenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         greenPaint.setStyle(Paint.Style.FILL);
-        greenPaint.setColor(Color.parseColor("#FF11CF31"));
+        greenPaint.setColor(ContextCompat.getColor(context, R.color.cubeGreen));
 
         redPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         redPaint.setStyle(Paint.Style.FILL);
-        redPaint.setColor(Color.parseColor("#FFE70000"));
+        redPaint.setColor(ContextCompat.getColor(context, R.color.cubeRed));
 
         orangePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         orangePaint.setStyle(Paint.Style.FILL);
-        orangePaint.setColor(Color.parseColor("#FFFE7D15"));
+        orangePaint.setColor(ContextCompat.getColor(context, R.color.cubeOrange));
 
         whitePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         whitePaint.setStyle(Paint.Style.FILL);
-        whitePaint.setColor(Color.parseColor("#FFFEFEFE"));
+        whitePaint.setColor(ContextCompat.getColor(context, R.color.cubeWhite));
 
         yellowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         yellowPaint.setStyle(Paint.Style.FILL);
-        yellowPaint.setColor(Color.parseColor("#FFFCD51E"));
+        yellowPaint.setColor(ContextCompat.getColor(context, R.color.cubeYellow));
 
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         strokePaint.setStyle(Paint.Style.STROKE);
