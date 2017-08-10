@@ -6,21 +6,31 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MotionEventCompat;
+import android.support.v7.widget.ButtonBarLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.GridLayout;
 
+import java.util.Arrays;
+
 
 public class ColorInputSolutionFragment extends Fragment implements View.OnClickListener{
 
     private View rootView;
     private GridLayout palette;
+    private GridLayout userInputField;
+
+    private char colorSelected;
+    private char sideChosen;
+    private char[][][] colorsInputed;
 
     public ColorInputSolutionFragment() {
         // Required empty public constructor
@@ -30,6 +40,12 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        colorSelected = 'B'; //Set blue as the initial default color
+        sideChosen = 'U';
+        colorsInputed = new char[6][3][3];
+        resetCubeInputs();
+
     }
 
     @Override
@@ -37,8 +53,14 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_color_input_fragment, container, false);
-        rootView.setOnClickListener(this);
+        rootView.findViewById(R.id.previous_side).setOnClickListener(this);
+        rootView.findViewById(R.id.next_side).setOnClickListener(this);
+
         palette = rootView.findViewById(R.id.palette);
+        userInputField = rootView.findViewById(R.id.user_input_field);
+
+        Button selectBlue = rootView.findViewById(R.id.select_blue);
+        selectBlue.setActivated(true);
 
         return rootView;
     }
@@ -48,8 +70,48 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
         super.onViewCreated(view, savedInstanceState);
 
         PaletteButtonClickListener paletteButtonClickListener = new PaletteButtonClickListener();
-        for(int i = palette.getChildCount()-1; i > 0; i--) {
-            palette.getChildAt(i).setOnClickListener(paletteButtonClickListener);
+        for(int i = palette.getChildCount()-1; i >= 0; i--) {
+            palette.getChildAt(i).setOnTouchListener(paletteButtonClickListener);
+        }
+
+        for (int i = userInputField.getChildCount()-1; i >= 0; i--) {
+            Button selectionButton = (Button)userInputField.getChildAt(i);
+            //Set a position tag to that we can access it later for row and column clicked
+            selectionButton.setTag("" + Integer.valueOf(i));
+
+            selectionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = Integer.parseInt((String)view.getTag());
+                    int row = position / 3;
+                    int col = position % 3;
+
+                    if(!(row == 1 && col == 1)) { //Do not allow for changing of center color
+                        switch (colorSelected) {
+                            case 'B':
+                                view.setBackgroundResource(R.drawable.cube_button_blue);
+                                break;
+                            case 'G':
+                                view.setBackgroundResource(R.drawable.cube_button_green);
+                                break;
+                            case 'R':
+                                view.setBackgroundResource(R.drawable.cube_button_red);
+                                break;
+                            case 'O':
+                                view.setBackgroundResource(R.drawable.cube_button_orange);
+                                break;
+                            case 'W':
+                                view.setBackgroundResource(R.drawable.cube_button_white);
+                                break;
+                            case 'Y':
+                                view.setBackgroundResource(R.drawable.cube_button_yellow);
+                                break;
+                        }
+
+                        colorsInputed[getIndexOfSide(sideChosen)][row][col] = colorSelected;
+                    }
+                }
+            });
         }
     }
 
@@ -69,22 +131,141 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
         super.onDetach();
     }
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-
+    /**
+     * Resets the colors inputed in color selection mode to the colors of a cube in its solved state.
+     */
+    public void resetCubeInputs() {
+        for(int i = 0; i<3; i++) {
+            Arrays.fill(colorsInputed[0][i], 'R');
+            Arrays.fill(colorsInputed[1][i], 'Y');
+            Arrays.fill(colorsInputed[2][i], 'G');
+            Arrays.fill(colorsInputed[3][i], 'B');
+            Arrays.fill(colorsInputed[4][i], 'O');
+            Arrays.fill(colorsInputed[5][i], 'W');
         }
     }
 
-    private class PaletteButtonClickListener implements View.OnClickListener {
+    private void previousSide() {
+        int currentIndex = getIndexOfSide(sideChosen);
+        if(currentIndex > 0) {
+            sideChosen = getSideOfIndex(currentIndex-1);
+            repaintSide();
+        }
+    }
+
+    private void nextSide() {
+        int currentIndex = getIndexOfSide(sideChosen);
+        if(currentIndex < 5) {
+            sideChosen = getSideOfIndex(currentIndex+1);
+            repaintSide();
+        }
+    }
+
+    private void repaintSide() {
+        int index = getIndexOfSide(sideChosen);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                Button selectionButton = (Button)userInputField.getChildAt(i*3+j);
+                switch (colorsInputed[index][i][j]) {
+                    case 'B':
+                        selectionButton.setBackgroundResource(R.drawable.cube_button_blue);
+                        break;
+                    case 'G':
+                        selectionButton.setBackgroundResource(R.drawable.cube_button_green);
+                        break;
+                    case 'R':
+                        selectionButton.setBackgroundResource(R.drawable.cube_button_red);
+                        break;
+                    case 'O':
+                        selectionButton.setBackgroundResource(R.drawable.cube_button_orange);
+                        break;
+                    case 'W':
+                        selectionButton.setBackgroundResource(R.drawable.cube_button_white);
+                        break;
+                    case 'Y':
+                        selectionButton.setBackgroundResource(R.drawable.cube_button_yellow);
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the index for colorsInputed[(index here)] that corresponds to the side currently being painted when in color
+     * selection mode. Helper method for paintComponent().
+     * @param side
+     * @return index
+     */
+    private int getIndexOfSide(char side) {
+        switch(side) {
+            case('L'): return 0;
+            case('U'): return 1;
+            case('F'): return 2;
+            case('B'): return 3;
+            case('R'): return 4;
+            default: return 5; //case 'D'
+        }
+    }
+
+    private char getSideOfIndex(int index) {
+        switch(index) {
+            case 0: return 'L';
+            case 1: return 'U';
+            case 2: return 'F';
+            case 3: return 'B';
+            case 4: return 'R';
+            default: return 'D'; //case '5'
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.previous_side:
+                previousSide();
+                break;
+            case R.id.next_side:
+                nextSide();
+                break;
+        }
+    }
+
+    private class PaletteButtonClickListener implements View.OnTouchListener {
+        Button previousSelection = rootView.findViewById(R.id.select_blue);
 
         @Override
-        public void onClick(View view) {
-            if(view.getId() == R.id.palette) {
-                Log.d("Clicked in whitespace:", "YES");
-            } else  {
-                Log.d("Clicked in whitespace:", "NO");
+        public boolean onTouch(View view, MotionEvent e) {
+            if (previousSelection != null) {
+                previousSelection.setActivated(false);
             }
+
+            switch (view.getId()) {
+                case R.id.select_blue:
+                    colorSelected = 'B';
+                    break;
+                case R.id.select_green:
+                    colorSelected = 'G';
+                    break;
+                case R.id.select_orange:
+                    colorSelected = 'O';
+                    break;
+                case R.id.select_red:
+                    colorSelected = 'R';
+                    break;
+                case R.id.select_white:
+                    colorSelected = 'W';
+                    break;
+                case R.id.select_yellow:
+                    colorSelected = 'Y';
+                    break;
+            }
+
+            if(view instanceof Button) {
+                previousSelection = (Button) view;
+            }
+            previousSelection.setActivated(true);
+
+            return true;
         }
     }
 }
