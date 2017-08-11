@@ -25,8 +25,8 @@ public class EditScrambleDialog extends DialogFragment {
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
     public interface EditScrambleDialogListener {
-        public void onDialogPositiveClick(DialogFragment dialog, String scramble);
-        public void onDialogNegativeClick(DialogFragment dialog);
+        void onDialogPositiveClick(DialogFragment dialog, String scramble);
+        void onDialogNegativeClick(DialogFragment dialog);
     }
 
     EditScrambleDialogListener editScrambleDialogListener;

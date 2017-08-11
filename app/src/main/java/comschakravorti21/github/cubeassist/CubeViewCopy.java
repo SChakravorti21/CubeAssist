@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,6 +38,8 @@ public class CubeViewCopy extends View {
     private int speedMultiplier;
 
     private Cube cube = new Cube();
+    private boolean hasColorInput;
+    private char[][][] colorsInputted;
     //Default scramble
     private final String DEFAULT_SCRAMBLE = getResources().getString(R.string.default_scramble);
     private String scramble = DEFAULT_SCRAMBLE,
@@ -107,6 +110,7 @@ public class CubeViewCopy extends View {
 
     private void init() {
         cube = new Cube();
+        moveSet = new String[8];
         resetScramble(scramble);
 
         Context context = getContext();
@@ -415,25 +419,79 @@ public class CubeViewCopy extends View {
         movesIndex = 0; phase = 0;
         phaseString = "Sunflower";
         invalidate();
+        hasColorInput = false;
 
-        moveSet = new String[] {sunflower, whiteCross, whiteCorners,
-                secondLayer, yellowCross, OLL, PLL, " "};
+        moveSet[0] = sunflower;
+        moveSet[1] = whiteCross;
+        moveSet[2] = whiteCorners;
+        moveSet[3] = secondLayer;
+        moveSet[4] = yellowCross;
+        moveSet[5] = OLL;
+        moveSet[6] = PLL;
+        moveSet[7] = " ";
+
 
         UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
         updateMoves.execute(getContext());
     }
 
-    public void resetCurrentScramble() {
+    /**
+     * After the user inputs their desired colors in color selection mode, pressing the setInputs button
+     * will invoke this method, acquiring the required moves necessary to solve the cube. The cube is restored back to
+     * the scrambled state after the solution moves are acquired.
+     */
+    public void resetScrambleByColorInputs(char[][][] colorsInputted) {
+        this.colorsInputted = colorsInputted;
         cube = new Cube();
-        cube.scramble(scramble);
+        cube.setAllColors(colorsInputted);
+
+        sunflower = cube.makeSunflower();
+        whiteCross = cube.makeWhiteCross();
+        whiteCorners = cube.finishWhiteLayer();
+        secondLayer = cube.insertAllEdges();
+        yellowCross = cube.makeYellowCross();
+        OLL = cube.orientLastLayer();
+        PLL = cube.permuteLastLayer();
+
+        cube = new Cube();
+        cube.setAllColors(colorsInputted);
+        //If the cube is being scrambled newly after initializing is complete and animation has begun,
+        //be sure to reset all reference indexes
+        movesIndex = 0; phase = 0;
+        phaseString = "Sunflower";
+        hasColorInput = true;
+        scramble = "";
+
+        moveSet[0] = sunflower;
+        moveSet[1] = whiteCross;
+        moveSet[2] = whiteCorners;
+        moveSet[3] = secondLayer;
+        moveSet[4] = yellowCross;
+        moveSet[5] = OLL;
+        moveSet[6] = PLL;
+        moveSet[7] = " ";
+
+        resetCurrentScramble(); //I'm not sure why, but this is necessary for it to work
+    }
+
+    public void resetCurrentScramble() {
+        if(!hasColorInput) {
+            cube = new Cube();
+            cube.scramble(scramble);
+
+        } else {
+            cube = new Cube();
+            cube.setAllColors(colorsInputted);
+        }
 
         movesToPerform = sunflower;
         movesPerformed = "";
 
-        movesIndex = 0; phase = 0;
+        movesIndex = 0;
+        phase = 0;
         phaseString = "Sunflower";
-        invalidate();
 
+        invalidate();
         UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
         updateMoves.execute(getContext());
     }
@@ -676,7 +734,7 @@ public class CubeViewCopy extends View {
                 }
 
                 TextSolutionFragment fragment = (TextSolutionFragment)((AppCompatActivity)getContext())
-                        .getSupportFragmentManager().findFragmentByTag("Text Solution Fragment");
+                        .getSupportFragmentManager().findFragmentById(R.id.container);
 
                 if(fragment != null) {
                     fragment.updateMoves(movesToPerform.substring(movesIndex).trim(),
