@@ -60,7 +60,7 @@
 
     </LinearLayout>
 
-    <comschakravorti21.github.cubeassist.CubeViewCopy
+    <comschakravorti21.github.cubeassist.CubeView
         android:id="@+id/cube_view"
         android:layout_width="330dp"
         android:layout_height="250dp"

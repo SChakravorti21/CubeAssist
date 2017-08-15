@@ -7,14 +7,7 @@
         android:id="@+id/action_reset"
         android:icon="@drawable/ic_replay_black"
         android:title="@string/reset_action"
-        app:showAsAction="ifRoom"/>
-
-    <item
-        android:id="@+id/action_edit_scramble"
-        android:icon="@drawable/ic_mode_edit_black"
-        android:title="@string/edit_action"
-        app:showAsAction="ifRoom"/>
-
+        app:showAsAction="always"/>
 
     <!-- Settings, should always be in the overflow
     <item android:id="@+id/action_settings"

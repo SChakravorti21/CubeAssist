@@ -91,7 +91,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_color_solution, menu);
+        ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_color_input, menu);
     }
 
     @Override

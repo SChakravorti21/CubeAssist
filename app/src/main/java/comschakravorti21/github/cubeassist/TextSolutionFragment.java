@@ -29,10 +29,14 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public static final String COLORS_INPUTTED_DOWN = "colors inputted down";
 
     protected View rootView;
-    protected CubeViewCopy cubeView;
+    protected CubeView cubeView;
 
+    private String inputType;
     private char[][][] allColorsInputted = new char[6][3][3];
 
+    public TextSolutionFragment() {
+
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,7 +64,8 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
         seekBar.setMax(14);
 
         Bundle args = getArguments();
-        if(args != null && args.getString(INITIAL_INPUT_TYPE).equals(MANUAL_COLOR_INPUT)) {
+        inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : "";
+        if(inputType.equals(MANUAL_COLOR_INPUT)) {
             cubeView.resetScrambleByColorInputs(allColorsInputted);
 
             TextView scrambleView = rootView.findViewById(R.id.scramble_view);
@@ -71,7 +76,12 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_text_solution, menu);
+
+        if(inputType.equals(MANUAL_COLOR_INPUT)) {
+            ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_color_solution, menu);
+        } else {
+            ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_text_solution, menu);
+        }
     }
 
     @Override
@@ -149,14 +159,18 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
                 cubeView.resetCurrentScramble();
                 break;
             case R.id.action_edit_scramble:
-                Bundle args = new Bundle();
-                args.putString(EditScrambleDialog.SCRAMBLE_TAG,
-                        ((TextView)rootView.findViewById(R.id.scramble_view)).getText().toString());
-                EditScrambleDialog dialog = new EditScrambleDialog();
-                dialog.setArguments(args);
-                dialog.show(((AppCompatActivity)getContext())
-                        .getSupportFragmentManager(), "edit scramble");
-                break;
+                if(inputType.equals(MANUAL_COLOR_INPUT)) {
+                    getActivity().getSupportFragmentManager().popBackStack();
+                } else {
+                    Bundle args = new Bundle();
+                    args.putString(EditScrambleDialog.SCRAMBLE_TAG,
+                            ((TextView) rootView.findViewById(R.id.scramble_view)).getText().toString());
+                    EditScrambleDialog dialog = new EditScrambleDialog();
+                    dialog.setArguments(args);
+                    dialog.show(((AppCompatActivity) getContext())
+                            .getSupportFragmentManager(), "edit scramble");
+                    break;
+                }
         }
         return super.onOptionsItemSelected(item);
     }
