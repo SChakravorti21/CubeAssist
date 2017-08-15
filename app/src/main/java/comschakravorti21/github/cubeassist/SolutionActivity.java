@@ -4,24 +4,20 @@ import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 public class SolutionActivity extends AppCompatActivity implements EditScrambleDialog.EditScrambleDialogListener{
 
     private final String TEXT_SCRAMBLE = "text scramble";
     private final String COLOR_INPUT = "color input";
     private String currentMode = TEXT_SCRAMBLE;
-    private TextSolutionFragment textSolutionFragment;
+    private TextSolutionFragment solutionFragment;
     private Toolbar toolbar;
     private ActionBarDrawerToggle drawerToggle;
     private DrawerLayout drawerLayout;
@@ -45,9 +41,9 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        textSolutionFragment = new TextSolutionFragment();
+        solutionFragment = new TextSolutionFragment();
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, textSolutionFragment, "Text Solution Fragment")
+                .add(R.id.container, solutionFragment, "Text Solution Fragment")
                 .addToBackStack(null)
                 .commit();
 
@@ -78,9 +74,7 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String scramble) {
-        TextView scrambleView = (TextView)findViewById(R.id.scramble_view);
-        scrambleView.setText(scramble);
-        textSolutionFragment.cubeView.resetScramble(scramble);
+        solutionFragment.onDialogPositiveClick(dialog, scramble);
     }
 
     @Override
@@ -132,6 +126,7 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
                     }
                     break;
             }
+            solutionFragment = (TextSolutionFragment)getSupportFragmentManager().findFragmentById(R.id.container);
             return true;
         }
     }

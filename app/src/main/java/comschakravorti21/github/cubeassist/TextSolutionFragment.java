@@ -28,8 +28,8 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public static final String COLORS_INPUTTED_RIGHT = "colors inputted right";
     public static final String COLORS_INPUTTED_DOWN = "colors inputted down";
 
-    protected View rootView;
-    protected CubeView cubeView;
+    private View rootView;
+    private CubeView cubeView;
 
     private String inputType;
     private char[][][] allColorsInputted = new char[6][3][3];
