@@ -3,4 +3,15 @@
     <string name="default_scramble">"R2 F2 R2 D2 B' R2 F L2 D2 F D2 U' B2 R2 B' D2 U' L' U' "</string>
     <string name="moves_to_perform_tag">To perform:</string>
     <string name="moves_performed_tag">Performed:</string>
+    <string name="reset_action">Reset</string>
+    <string name="edit_action">Edit Scramble</string>
+    <string name="random_scramble_action">Random Scramble</string>
+    <string name="action_settings">Settings</string>
+    <string name="initial_phase">Sunflower</string>
+    <string name="open_drawer">Open Drawer</string>
+    <string name="close_drawer">Close Drawer</string>
+    <string name="color_input_instructions">Hold your cube such that the center colors match
+        as follows, and input your cube\'s colors. When done with ALL SIX SIDES, hit \"Generate
+        Solution.\"</string>
+    <string name="generate_solution">Generate Solution</string>
 </resources>

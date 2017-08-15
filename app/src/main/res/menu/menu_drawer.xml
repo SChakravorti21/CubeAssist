@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <group android:checkableBehavior="single">
+            <item
+                android:id="@+id/text_scramble"
+                android:title="Text Scramble Input"
+                android:icon="@drawable/ic_text_field" />
+
+            <item
+                android:id="@+id/color_input"
+                android:title="Color Input"
+                android:icon="@drawable/ic_brush_black" />
+        </group>
+
+</menu>

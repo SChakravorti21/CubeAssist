@@ -4,9 +4,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,8 +29,11 @@ public class CubeView extends View {
     private Timer frameTimer;
     private TimerTask animationTask;
     private boolean animationStopped;
+    private int speedMultiplier;
 
     private Cube cube = new Cube();
+    private boolean hasColorInput;
+    private char[][][] colorsInputted;
     //Default scramble
     private final String DEFAULT_SCRAMBLE = getResources().getString(R.string.default_scramble);
     private String scramble = DEFAULT_SCRAMBLE,
@@ -39,6 +44,7 @@ public class CubeView extends View {
             yellowCross = "",
             OLL = "",
             PLL = "";
+    private String[] moveSet;
     private String movesToPerform = "",
             movesPerformed = "";
 
@@ -98,39 +104,43 @@ public class CubeView extends View {
 
     private void init() {
         cube = new Cube();
+        moveSet = new String[8];
         resetScramble(scramble);
 
+        Context context = getContext();
         bluePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bluePaint.setStyle(Paint.Style.FILL);
-        bluePaint.setColor(Color.parseColor("#03A9F4"));
+        bluePaint.setColor(ContextCompat.getColor(context, R.color.cubeBlue));
 
         greenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         greenPaint.setStyle(Paint.Style.FILL);
-        greenPaint.setColor(Color.parseColor("#FF11CF31"));
+        greenPaint.setColor(ContextCompat.getColor(context, R.color.cubeGreen));
 
         redPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         redPaint.setStyle(Paint.Style.FILL);
-        redPaint.setColor(Color.parseColor("#FFE70000"));
+        redPaint.setColor(ContextCompat.getColor(context, R.color.cubeRed));
 
         orangePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         orangePaint.setStyle(Paint.Style.FILL);
-        orangePaint.setColor(Color.parseColor("#FFFE7D15"));
+        orangePaint.setColor(ContextCompat.getColor(context, R.color.cubeOrange));
 
         whitePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         whitePaint.setStyle(Paint.Style.FILL);
-        whitePaint.setColor(Color.parseColor("#FFFEFEFE"));
+        whitePaint.setColor(ContextCompat.getColor(context, R.color.cubeWhite));
 
         yellowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         yellowPaint.setStyle(Paint.Style.FILL);
-        yellowPaint.setColor(Color.parseColor("#FFFCD51E"));
+        yellowPaint.setColor(ContextCompat.getColor(context, R.color.cubeYellow));
 
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setColor(Color.BLACK);
         strokePaint.setStrokeWidth(6);
 
+        speedMultiplier = 1;
         cubieSize = (int)dpToPx(22);
         gap = (int)dpToPx(4);
+        animationStopped = true; //Wait until the user clicks on the cube to start animation
 
         setOnTouchListener(new OnTouchListener() {
 
@@ -156,8 +166,13 @@ public class CubeView extends View {
                         int distance = (int)pxToDp(distance(initX, initY, finalX, finalY));
                         if(eventTime >= MIN_DRAG_TIME || distance >= MIN_DRAG_DISTANCE) {
                             if (finalX > initX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the right
-                                performNextMove();
-                                invalidate();
+                                if(phase < 7) { //Only do stuff if the solve is not complete yet
+                                    performNextMove();
+                                    invalidate();
+
+                                    UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                                    updateMoves.execute(getContext());
+                                }
                             }
                             else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
                                 boolean flag = false;
@@ -177,12 +192,16 @@ public class CubeView extends View {
                                 }
                                 cube.reverseMoves(movesToPerform.substring(movesIndex, prevIndex));
                                 invalidate();
+
+
+                                UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                                updateMoves.execute(getContext());
                             }
                         }
 
                         else { //Just a click
-                            if (animationStopped) {
-                                startAnimation();
+                            if (animationStopped && phase < 7) {
+                                startAnimation(speedMultiplier);
                             } else if (!animationStopped) {
                                 stopAnimation();
                             }
@@ -204,30 +223,9 @@ public class CubeView extends View {
             }
 
         });
-    }
 
-    public void onViewCreated() {
-        final SolutionActivity activity = (SolutionActivity)getContext();
-
-        animationStopped = false;
-        animationTask = new TimerTask() {
-            synchronized public void run() {
-                performNextMove();
-                postInvalidate();
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                movesPerformed.trim());
-                    }
-                });
-            }
-        };
-
-        frameTimer = new Timer();
-        frameTimer.scheduleAtFixedRate(animationTask,
-                TimeUnit.MILLISECONDS.toMillis(DELAY),
-                TimeUnit.MILLISECONDS.toMillis(DELAY));
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
     }
 
     @Override
@@ -406,7 +404,7 @@ public class CubeView extends View {
         PLL = cube.permuteLastLayer();
 
         movesToPerform = sunflower;
-        movesPerformed = new String();
+        movesPerformed = "";
 
         cube = new Cube();
         cube.scramble(scramble);
@@ -415,6 +413,88 @@ public class CubeView extends View {
         movesIndex = 0; phase = 0;
         phaseString = "Sunflower";
         invalidate();
+        hasColorInput = false;
+
+        moveSet[0] = sunflower;
+        moveSet[1] = whiteCross;
+        moveSet[2] = whiteCorners;
+        moveSet[3] = secondLayer;
+        moveSet[4] = yellowCross;
+        moveSet[5] = OLL;
+        moveSet[6] = PLL;
+        moveSet[7] = " ";
+
+
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
+    }
+
+    /**
+     * After the user inputs their desired colors in color selection mode, pressing the setInputs button
+     * will invoke this method, acquiring the required moves necessary to solve the cube. The cube is restored back to
+     * the scrambled state after the solution moves are acquired.
+     */
+    public void resetScrambleByColorInputs(char[][][] colorsInputted) {
+        this.colorsInputted = colorsInputted;
+        cube = new Cube();
+        cube.setAllColors(colorsInputted);
+
+        sunflower = cube.makeSunflower();
+        whiteCross = cube.makeWhiteCross();
+        whiteCorners = cube.finishWhiteLayer();
+        secondLayer = cube.insertAllEdges();
+        yellowCross = cube.makeYellowCross();
+        OLL = cube.orientLastLayer();
+        PLL = cube.permuteLastLayer();
+
+        cube = new Cube();
+        cube.setAllColors(colorsInputted);
+        //If the cube is being scrambled newly after initializing is complete and animation has begun,
+        //be sure to reset all reference indexes
+        movesIndex = 0; phase = 0;
+        phaseString = "Sunflower";
+        hasColorInput = true;
+        scramble = "";
+
+        moveSet[0] = sunflower;
+        moveSet[1] = whiteCross;
+        moveSet[2] = whiteCorners;
+        moveSet[3] = secondLayer;
+        moveSet[4] = yellowCross;
+        moveSet[5] = OLL;
+        moveSet[6] = PLL;
+        moveSet[7] = " ";
+
+        resetCurrentScramble(); //I'm not sure why, but this is necessary for it to work
+    }
+
+    public void resetCurrentScramble() {
+        if(!hasColorInput) {
+            cube = new Cube();
+            cube.scramble(scramble);
+
+        } else {
+            cube = new Cube();
+            cube.setAllColors(colorsInputted);
+        }
+
+        movesToPerform = sunflower;
+        movesPerformed = "";
+
+        movesIndex = 0;
+        phase = 0;
+        phaseString = "Sunflower";
+
+        invalidate();
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
+    }
+
+    public String randScramble() {
+        scramble = Cube.generateRandScramble();
+        resetScramble(scramble);
+
+        return scramble;
     }
 
     /**
@@ -459,7 +539,7 @@ public class CubeView extends View {
         }
         //Ensure that movesPerformed does not overflow out of the graphical interface
         if(movesPerformed.length() >= 35) {
-            movesPerformed = movesPerformed.substring(movesPerformed.length()-33);
+            movesPerformed = movesPerformed.substring(movesPerformed.length()-30);
         }
     }
 
@@ -473,32 +553,45 @@ public class CubeView extends View {
         if(movesIndex >= movesToPerform.length()) {
             switch(phase) {
                 case 0:
-                    movesToPerform = whiteCross;
                     phaseString = "White Cross"; break;
                 case 1:
-                    movesToPerform = whiteCorners;
                     phaseString = "White Corners"; break;
                 case 2:
-                    movesToPerform = secondLayer;
                     phaseString = "Second Layer"; break;
                 case 3:
-                    movesToPerform = yellowCross;
                     phaseString = "Yellow Cross";break;
                 case 4:
-                    movesToPerform = OLL;
                     phaseString = "OLL";break;
                 case 5:
-                    movesToPerform = PLL;
                     phaseString = "PLL";break;
                 case 6:
-                    movesToPerform = " ";
-                    phaseString = "Solved"; phase--;
-                    frameTimer.cancel();
+                    //Failsafe to prevent app from crashing if the user tries to fast forward
+                    //once the solve is finished
+                    if(!animationStopped) {
+                        phaseString = "Solved";
+                        stopAnimation();
+                    }
                     break;
             }
-            movesPerformed = "";
-            phase++; movesIndex = 0;
+            if(phase < 7) {
+                movesPerformed = "";
+                phase++;
+                movesIndex = 0;
+                movesToPerform = moveSet[phase];
+            }
         }
+    }
+
+    public int getPhase() {
+        return phase;
+    }
+
+    public void skipToPhase(int skipTo) {
+        UpdateUI skipMoves = new UpdateUI(UpdateUI.SKIP_PHASES, phase, skipTo);
+        skipMoves.execute(getContext());
+
+        UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+        updateMoves.execute(getContext());
     }
 
     public void stopAnimation() {
@@ -508,29 +601,144 @@ public class CubeView extends View {
         }
     }
 
-    public void startAnimation() {
-        if(animationStopped) {
-            final SolutionActivity activity = (SolutionActivity)getContext();
+    public void setSpeedMultiplier(int speedMultiplier) {
+        this.speedMultiplier = speedMultiplier;
+    }
 
+    public boolean getAnimationStopped() {
+        return animationStopped;
+    }
+
+    public void startAnimation(int multiplySpeed) {
+        speedMultiplier = multiplySpeed;
+
+        if(animationStopped) {
             animationTask = new TimerTask() {
                 synchronized public void run() {
                     performNextMove();
                     postInvalidate();
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            activity.updateMoves(movesToPerform.substring(movesIndex).trim(),
-                                    movesPerformed.trim());
-                        }
-                    });
+
+                    UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
+                    updateMoves.execute(getContext());
+
                 }
             };
 
             frameTimer = new Timer();
             frameTimer.scheduleAtFixedRate(animationTask,
-                    TimeUnit.MILLISECONDS.toMillis(DELAY),
-                    TimeUnit.MILLISECONDS.toMillis(DELAY));
+                    TimeUnit.MILLISECONDS.toMillis(DELAY/speedMultiplier),
+                    TimeUnit.MILLISECONDS.toMillis(DELAY/speedMultiplier));
             animationStopped = false;
         }
     }
+
+    private class UpdateUI extends AsyncTask<Context, Void, SolutionActivity> {
+        final static int UPDATE_MOVES_ON_UI = 1;
+        final static int SKIP_PHASES = 2;
+        private int taskType;
+        private int currentPhase, skipTo;
+
+        public UpdateUI(int task) {
+            taskType = task;
+        }
+
+        public UpdateUI(int task, int curPhase, int skipToPhase) {
+            taskType = task;
+            currentPhase = curPhase;
+            skipTo = skipToPhase;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if(taskType == SKIP_PHASES) {
+                stopAnimation();
+            }
+        }
+
+        @Override
+        protected SolutionActivity doInBackground(Context... contexts) {
+            SolutionActivity activity = (SolutionActivity)contexts[0];
+
+            if(taskType == SKIP_PHASES) { //At 7 the solve is complete
+                if(skipTo > currentPhase && currentPhase < 7) {
+                    cube.performMoves(movesToPerform.substring(movesIndex));
+                    currentPhase++;
+                    movesToPerform = moveSet[phase];
+
+                    for(; currentPhase < skipTo; currentPhase++) {
+                        cube.performMoves(moveSet[currentPhase]);
+                    }
+
+                    movesPerformed = "";
+                    movesIndex = 0;
+                    movesToPerform = moveSet[currentPhase];
+                }
+                else if (skipTo < currentPhase && currentPhase > 0){
+                    //Log.d("Tried skipping", "true");
+                    cube = new Cube();
+                    cube.scramble(scramble);
+
+                    for(currentPhase = 0; currentPhase < skipTo; currentPhase++) {
+                        cube.performMoves(moveSet[currentPhase]);
+                    }
+
+                    movesPerformed = "";
+                    movesIndex = 0;
+                    movesToPerform = moveSet[currentPhase];
+                }
+                phase = currentPhase;
+            }
+
+            return activity;
+        }
+
+        @Override
+        protected void onPostExecute(SolutionActivity activity) {
+
+            if(taskType == SKIP_PHASES) {
+                postInvalidate();
+            }
+            else if(taskType == UPDATE_MOVES_ON_UI) {
+                switch(phase) {
+                    case 0:
+                        phaseString = "Sunflower";
+                        break;
+                    case 1:
+                        phaseString = "White Cross";
+                        break;
+                    case 2:
+                        phaseString = "White Corners";
+                        break;
+                    case 3:
+                        phaseString = "Second Layer";
+                        break;
+                    case 4:
+                        phaseString = "Yellow Cross";
+                        break;
+                    case 5:
+                        phaseString = "OLL";
+                        break;
+                    case 6:
+                        phaseString = "PLL";
+                        break;
+                    case 7:
+                        phaseString = "Solved";
+                        break;
+                }
+
+                TextSolutionFragment fragment = (TextSolutionFragment)((AppCompatActivity)getContext())
+                        .getSupportFragmentManager().findFragmentById(R.id.container);
+
+                if(fragment != null) {
+                    fragment.updateMoves(movesToPerform.substring(movesIndex).trim(),
+                            movesPerformed.trim(), phaseString);
+                }
+
+                super.onPostExecute(activity);
+            }
+        }
+    }
 }
+
+
