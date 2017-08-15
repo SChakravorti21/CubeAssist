@@ -14,4 +14,7 @@
         as follows, and input your cube\'s colors. When done with ALL SIX SIDES, hit \"Generate
         Solution.\"</string>
     <string name="generate_solution">Generate Solution</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

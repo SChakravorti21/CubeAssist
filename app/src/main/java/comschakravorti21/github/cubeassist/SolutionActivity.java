@@ -1,6 +1,9 @@
 package comschakravorti21.github.cubeassist;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.hardware.Camera;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
