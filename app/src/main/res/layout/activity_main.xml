@@ -9,7 +9,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="comschakravorti21.github.cubeassist.SolutionActivity">
+        tools:context="comschakravorti21.github.cubeassist.MainActivity">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -33,6 +33,7 @@
 
     <android.support.design.widget.NavigationView
         app:itemTextColor="@color/textColorPrimary"
+        android:fitsSystemWindows="true"
         android:id="@+id/left_drawer"
         android:layout_width="304dp"
         android:layout_height="match_parent"

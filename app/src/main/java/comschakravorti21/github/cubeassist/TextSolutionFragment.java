@@ -48,7 +48,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        rootView = inflater.inflate(R.layout.activity_solution_copy, container, false);
+        rootView = inflater.inflate(R.layout.fragment_solution, container, false);
         return rootView;
     }
 

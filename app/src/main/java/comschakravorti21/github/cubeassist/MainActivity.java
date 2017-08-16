@@ -1,5 +1,6 @@
 package comschakravorti21.github.cubeassist;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -12,7 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
-public class SolutionActivity extends AppCompatActivity implements EditScrambleDialog.EditScrambleDialogListener{
+public class MainActivity extends AppCompatActivity implements EditScrambleDialog.EditScrambleDialogListener{
 
     private final String TEXT_SCRAMBLE = "text scramble";
     private final String COLOR_INPUT = "color input";
@@ -36,7 +37,7 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_test);
+        setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -127,10 +128,12 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
                     break;
                 case R.id.camera_input:
                     if(!currentMode.equals("Camera Input")) {
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, new CaptureCubeFragment(), "Camera Input Fragment")
-                                .addToBackStack(null)
-                                .commit();
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.container, new CaptureCubeFragment(), "Camera Input Fragment")
+//                                .addToBackStack(null)
+//                                .commit();
+                        Intent intent = new Intent(getApplicationContext(), CaptureCubeActivity.class);
+                        startActivity(intent);
                         currentMode = "Camera Input";
                         drawerLayout.closeDrawers();
                     }

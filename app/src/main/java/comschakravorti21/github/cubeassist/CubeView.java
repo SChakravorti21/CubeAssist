@@ -632,7 +632,7 @@ public class CubeView extends View {
         }
     }
 
-    private class UpdateUI extends AsyncTask<Context, Void, SolutionActivity> {
+    private class UpdateUI extends AsyncTask<Context, Void, MainActivity> {
         final static int UPDATE_MOVES_ON_UI = 1;
         final static int SKIP_PHASES = 2;
         private int taskType;
@@ -657,8 +657,8 @@ public class CubeView extends View {
         }
 
         @Override
-        protected SolutionActivity doInBackground(Context... contexts) {
-            SolutionActivity activity = (SolutionActivity)contexts[0];
+        protected MainActivity doInBackground(Context... contexts) {
+            MainActivity activity = (MainActivity)contexts[0];
 
             if(taskType == SKIP_PHASES) { //At 7 the solve is complete
                 if(skipTo > currentPhase && currentPhase < 7) {
@@ -694,7 +694,7 @@ public class CubeView extends View {
         }
 
         @Override
-        protected void onPostExecute(SolutionActivity activity) {
+        protected void onPostExecute(MainActivity activity) {
 
             if(taskType == SKIP_PHASES) {
                 postInvalidate();

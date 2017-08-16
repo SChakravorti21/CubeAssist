@@ -5,19 +5,8 @@
     android:id="@+id/solution_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="comschakravorti21.github.cubeassist.SolutionActivity"
+    tools:context="comschakravorti21.github.cubeassist.MainActivity"
     android:animateLayoutChanges="true">
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <TextView
         android:id="@+id/scramble_view"

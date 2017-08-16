@@ -1,31 +1,26 @@
 package comschakravorti21.github.cubeassist;
 
-
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import static comschakravorti21.github.cubeassist.R.id.container;
 
 /**
- * A simple {@link Fragment} subclass.
+ * Created by development on 8/16/17.
  */
-public class CaptureCubeFragment extends Fragment {
 
-    private View rootView;
+public class CaptureCubeActivity extends AppCompatActivity {
+
     private Camera camera;
     CameraPreview preview;
-
-    public CaptureCubeFragment() {
-        // Required empty public constructor
-    }
-
 
     /** Check if this device has a camera */
     private boolean checkCameraHardware(Context context) {
@@ -49,28 +44,26 @@ public class CaptureCubeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        rootView = inflater.inflate(R.layout.fragment_camera_capture_cube, container, false);
-        return rootView;
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_camera_capture_cube);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Context context = getContext();
-        if(preview == null && checkCameraHardware(context)) {
-            camera = getCameraInstance(context);
-            preview = new CameraPreview(context, camera);
-            FrameLayout container = rootView.findViewById(R.id.camera_preview_container);
+        if(preview == null && checkCameraHardware(this)) {
+            camera = getCameraInstance(this);
+            preview = new CameraPreview(this, camera);
+            FrameLayout container = (FrameLayout)findViewById(R.id.camera_preview_container);
             container.addView(preview, 0);
         }
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         if(camera != null) {
             camera.stopPreview();
             camera.release();

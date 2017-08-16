@@ -745,7 +745,6 @@ public class Cube {
 	public Cube scramble(String scramble) {
 		//Rotate the cube to get white on top, then return cube to original position at end of scramble
 		performMoves("z2 " + scramble + " z2");
-		Log.e("Scrambled", "true");
 		return this;
 	}
 
