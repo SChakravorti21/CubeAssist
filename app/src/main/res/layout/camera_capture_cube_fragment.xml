@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="comschakravorti21.github.cubeassist.CameraCaptureCube">
+    tools:context="comschakravorti21.github.cubeassist.CaptureCubeFragment">
 
     <FrameLayout
         android:id="@+id/camera_preview_container"

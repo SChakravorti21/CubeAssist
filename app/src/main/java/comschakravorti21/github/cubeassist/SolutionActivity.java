@@ -1,9 +1,6 @@
 package comschakravorti21.github.cubeassist;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.hardware.Camera;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
@@ -128,8 +125,18 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
                         drawerLayout.closeDrawers();
                     }
                     break;
+                case R.id.camera_input:
+                    if(!currentMode.equals(COLOR_INPUT)) {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, new CaptureCubeFragment(), "Camera Input Fragment")
+                                .addToBackStack(null)
+                                .commit();
+                        currentMode = COLOR_INPUT;
+                        drawerLayout.closeDrawers();
+                    }
+                    break;
             }
-            solutionFragment = (TextSolutionFragment)getSupportFragmentManager().findFragmentById(R.id.container);
+            //solutionFragment = (TextSolutionFragment)getSupportFragmentManager().findFragmentById(R.id.container);
             return true;
         }
     }

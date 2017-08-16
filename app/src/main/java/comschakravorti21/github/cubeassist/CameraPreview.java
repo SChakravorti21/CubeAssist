@@ -24,12 +24,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
+        // deprecated setting, but required on Android versions prior to 3.0
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
         // The Surface has been created, now tell the camera where to draw the preview.
         try {
             camera.setPreviewDisplay(holder);
+            camera.setDisplayOrientation(90);
             camera.startPreview();
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());

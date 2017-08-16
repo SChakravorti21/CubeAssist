@@ -11,6 +11,11 @@
                 android:id="@+id/color_input"
                 android:title="Color Input"
                 android:icon="@drawable/ic_brush_black" />
+
+            <item
+                android:id="@+id/camera_input"
+                android:title="Camera Input"
+                android:icon="@drawable/ic_brush_black" />
         </group>
 
 </menu>

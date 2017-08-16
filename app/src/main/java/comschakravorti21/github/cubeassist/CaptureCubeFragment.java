@@ -15,12 +15,12 @@ import android.widget.FrameLayout;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CameraCaptureCube extends Fragment {
+public class CaptureCubeFragment extends Fragment {
 
     private View rootView;
     private Camera camera;
 
-    public CameraCaptureCube() {
+    public CaptureCubeFragment() {
         // Required empty public constructor
     }
 
