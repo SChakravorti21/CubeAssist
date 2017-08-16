@@ -126,12 +126,12 @@ public class SolutionActivity extends AppCompatActivity implements EditScrambleD
                     }
                     break;
                 case R.id.camera_input:
-                    if(!currentMode.equals(COLOR_INPUT)) {
+                    if(!currentMode.equals("Camera Input")) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, new CaptureCubeFragment(), "Camera Input Fragment")
                                 .addToBackStack(null)
                                 .commit();
-                        currentMode = COLOR_INPUT;
+                        currentMode = "Camera Input";
                         drawerLayout.closeDrawers();
                     }
                     break;
