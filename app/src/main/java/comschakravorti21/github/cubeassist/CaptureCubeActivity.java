@@ -84,8 +84,8 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         if (camera != null) {
             camera.stopPreview();
             camera.release();
@@ -119,14 +119,6 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         int cubieSideLength = cubeSideLength / 3;
         int startX = centerX - cubeSideLength / 2;
         int startY = centerY - cubeSideLength / 2;
-        Log.d("CenterX", "" + centerX);
-        Log.d("CenterY", "" + centerY);
-        Log.d("CubeSide", "" + cubeSideLength);
-        Log.d("CubieSide", "" + cubieSideLength);
-        Log.d("StartX", "" + startX);
-        Log.d("StartY", "" + startY);
-
-        //canvas.drawRect(startX, startY, startX + cubeSideLength, startY + cubeSideLength, strokePaint);
 
         for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
             for (int y = startY; y < startY + cubeSideLength; y += cubieSideLength ) {
