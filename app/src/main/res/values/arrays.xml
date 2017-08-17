@@ -5,4 +5,13 @@
         <item>Manual Color Input</item>
     </string-array>
 
+    <string-array name="cube_capture_sides" >
+        <item>Green Center</item>
+        <item>Blue Center</item>
+        <item>Red Center</item>
+        <item>Orange Center</item>
+        <item>Yellow Center</item>
+        <item>White Center</item>
+    </string-array>
+
 </resources>

@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                         Intent intent = new Intent(getApplicationContext(), CaptureCubeActivity.class);
                         startActivity(intent);
                         currentMode = "Camera Input";
+                        drawerList.setCheckedItem(R.id.text_scramble);
                         drawerLayout.closeDrawers();
                     }
                     break;

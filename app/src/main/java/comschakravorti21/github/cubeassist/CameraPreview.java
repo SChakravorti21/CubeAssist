@@ -38,6 +38,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
+    //TODO: implement onDraw to show gridlines for cube alignment
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {

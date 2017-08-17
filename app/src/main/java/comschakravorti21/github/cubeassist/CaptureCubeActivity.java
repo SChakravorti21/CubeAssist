@@ -5,13 +5,13 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.Spinner;
 
-import static comschakravorti21.github.cubeassist.R.id.container;
+import static android.widget.ArrayAdapter.createFromResource;
 
 /**
  * Created by development on 8/16/17.
@@ -47,7 +47,13 @@ public class CaptureCubeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_camera_capture_cube);
+        setContentView(R.layout.activity_camera_capture_cube);
+
+        Spinner sideOptions = (Spinner)findViewById(R.id.side_options);
+        ArrayAdapter<CharSequence> spiinerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.cube_capture_sides, android.R.layout.simple_spinner_dropdown_item);
+        spiinerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sideOptions.setAdapter(spiinerAdapter);
     }
 
     @Override
