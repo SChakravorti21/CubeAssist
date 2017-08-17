@@ -1,8 +1,13 @@
 package comschakravorti21.github.cubeassist;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,22 +25,53 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     protected Camera camera;
     Size previewSize;
     //private boolean surfaceWasDestroyed;
-    List<Size> mSupportedPreviewSizes;
+    List<Size> supportedPreviewSizes;
     private SurfaceHolder surfaceHolder;
+    private Paint strokePaint;
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+
+        int centerX = (metrics.widthPixels / 2);
+        int centerY = (metrics.heightPixels / 2);
+
+        int cubeSideLength = (metrics.widthPixels * 3 / 5);
+        int cubieSideLength = cubeSideLength / 3;
+        int startX = centerX - cubeSideLength / 2;
+        int startY = centerY - cubeSideLength / 2;
+
+        for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
+            for (int y = startY; x < startY + cubeSideLength; y += cubieSideLength ) {
+                canvas.drawRoundRect(x, y,
+                        x + cubieSideLength,
+                        y + cubeSideLength,
+                        cubieSideLength / 5,
+                        cubieSideLength / 5,
+                        strokePaint);
+            }
+        }
+    }
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
         Log.d("Surface Constructed", "TRUE");
         this.camera = camera;
-        mSupportedPreviewSizes = camera.getParameters().getSupportedPreviewSizes();
+        supportedPreviewSizes = camera.getParameters().getSupportedPreviewSizes();
 
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-    }
 
-    //TODO: implement onDraw to show gridlines for cube alignment
+        strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setColor(Color.BLACK);
+        strokePaint.setStrokeWidth(6);
+        setWillNotDraw(true);
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -43,8 +79,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
         final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
-        if (mSupportedPreviewSizes != null) {
-            previewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
+        if (supportedPreviewSizes != null) {
+            previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
         }
     }
 
@@ -104,6 +140,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             camera.setPreviewDisplay(surfaceHolder);
             camera.setDisplayOrientation(90);
             camera.startPreview();
+            invalidate();
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }

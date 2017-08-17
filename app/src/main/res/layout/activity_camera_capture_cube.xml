@@ -7,9 +7,10 @@
     <FrameLayout
         android:id="@+id/camera_preview_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></FrameLayout>
+        android:layout_height="match_parent"/>
 
     <RelativeLayout
+        android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_alignParentBottom="true"
@@ -33,5 +34,12 @@
             android:src="@drawable/ic_photo_camera_white" />
 
     </RelativeLayout>
+
+
+    <SurfaceView
+        android:layout_above="@id/bottom_bar"
+        android:id="@+id/grid_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

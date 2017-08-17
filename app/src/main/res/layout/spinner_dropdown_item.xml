@@ -7,4 +7,5 @@
     android:background="@color/colorPrimary"
     android:ellipsize="marquee"
     android:maxLines="1"
-    android:textColor="@android:color/white" />
+    android:textColor="@android:color/white"
+    android:textAllCaps="true"/>

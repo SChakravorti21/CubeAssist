@@ -19,7 +19,7 @@ import android.widget.TextView;
 import java.util.Arrays;
 
 
-public class ColorInputSolutionFragment extends Fragment implements View.OnClickListener {
+public class ColorInputFragment extends Fragment implements View.OnClickListener {
 
     private View rootView;
     private GridLayout palette;
@@ -30,7 +30,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
     private char[][][] colorsInputted;
     private String[] instructionColors;
 
-    public ColorInputSolutionFragment() {
+    public ColorInputFragment() {
         // Required empty public constructor
     }
 

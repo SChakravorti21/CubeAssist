@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                 case R.id.color_input:
                     if (!currentMode.equals(COLOR_INPUT)) {
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, new ColorInputSolutionFragment(), "Color Input Fragment")
+                                .replace(R.id.container, new ColorInputFragment(), "Color Input Fragment")
                                 .addToBackStack(null)
                                 .commit();
                         currentMode = COLOR_INPUT;
