@@ -2,18 +2,18 @@ package comschakravorti21.github.cubeassist;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
-public class MainActivity extends AppCompatActivity implements EditScrambleDialog.EditScrambleDialogListener{
+public class MainActivity extends AppCompatActivity implements EditScrambleDialog.EditScrambleDialogListener {
 
     private final String TEXT_SCRAMBLE = "text scramble";
     private final String COLOR_INPUT = "color input";
@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
 
     @Override
     public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0 ){
+        if (getFragmentManager().getBackStackEntryCount() > 0) {
             getFragmentManager().popBackStack();
         } else {
             super.onBackPressed();
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         solutionFragment = new TextSolutionFragment();
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                 .commit();
 
         navDrawerTitles = getResources().getStringArray(R.array.nav_drawer_items);
-        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (NavigationView) findViewById(R.id.left_drawer);
         drawerList.setCheckedItem(R.id.text_scramble);
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.text_scramble:
-                    if(!currentMode.equals(TEXT_SCRAMBLE)) {
+                    if (!currentMode.equals(TEXT_SCRAMBLE)) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, new TextSolutionFragment(), "Text Solution Fragment")
                                 .addToBackStack(null)
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                     }
                     break;
                 case R.id.color_input:
-                    if(!currentMode.equals(COLOR_INPUT)) {
+                    if (!currentMode.equals(COLOR_INPUT)) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, new ColorInputSolutionFragment(), "Color Input Fragment")
                                 .addToBackStack(null)
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                     }
                     break;
                 case R.id.camera_input:
-                    if(!currentMode.equals("Camera Input")) {
+                    if (!currentMode.equals("Camera Input")) {
 //                        getSupportFragmentManager().beginTransaction()
 //                                .replace(R.id.container, new CaptureCubeFragment(), "Camera Input Fragment")
 //                                .addToBackStack(null)

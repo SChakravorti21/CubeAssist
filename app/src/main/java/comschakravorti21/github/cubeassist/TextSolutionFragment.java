@@ -17,7 +17,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class TextSolutionFragment extends Fragment implements View.OnClickListener,
-        EditScrambleDialog.EditScrambleDialogListener, SeekBar.OnSeekBarChangeListener{
+        EditScrambleDialog.EditScrambleDialogListener, SeekBar.OnSeekBarChangeListener {
 
     public static final String INITIAL_INPUT_TYPE = "initial input type";
     public static final String MANUAL_COLOR_INPUT = "manual color input";
@@ -65,7 +65,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
 
         Bundle args = getArguments();
         inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : "";
-        if(inputType.equals(MANUAL_COLOR_INPUT)) {
+        if (inputType.equals(MANUAL_COLOR_INPUT)) {
             cubeView.resetScrambleByColorInputs(allColorsInputted);
 
             TextView scrambleView = rootView.findViewById(R.id.scramble_view);
@@ -77,8 +77,8 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        if(inputType.equals(MANUAL_COLOR_INPUT)) {
-            ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_color_solution, menu);
+        if (inputType.equals(MANUAL_COLOR_INPUT)) {
+            ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_color_solution, menu);
         } else {
             ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_text_solution, menu);
         }
@@ -108,10 +108,10 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.skip_forward:
-                cubeView.skipToPhase(cubeView.getPhase()+1);
+                cubeView.skipToPhase(cubeView.getPhase() + 1);
                 break;
             case R.id.rewind:
-                cubeView.skipToPhase(cubeView.getPhase()-1);
+                cubeView.skipToPhase(cubeView.getPhase() - 1);
                 break;
         }
     }
@@ -150,7 +150,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.action_random:
                 TextView scrambleView = rootView.findViewById(R.id.scramble_view);
                 scrambleView.setText(cubeView.randScramble());
@@ -159,7 +159,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
                 cubeView.resetCurrentScramble();
                 break;
             case R.id.action_edit_scramble:
-                if(inputType.equals(MANUAL_COLOR_INPUT)) {
+                if (inputType.equals(MANUAL_COLOR_INPUT)) {
                     getActivity().getSupportFragmentManager().popBackStack();
                 } else {
                     Bundle args = new Bundle();
@@ -178,9 +178,9 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        if(args != null) {
+        if (args != null) {
             String initInputType = args.getString(INITIAL_INPUT_TYPE);
-            if(initInputType != null && initInputType.equals(MANUAL_COLOR_INPUT)) {
+            if (initInputType != null && initInputType.equals(MANUAL_COLOR_INPUT)) {
                 allColorsInputted[0] = unpackArrays(args.getCharArray(COLORS_INPUTTED_LEFT));
                 allColorsInputted[1] = unpackArrays(args.getCharArray(COLORS_INPUTTED_UP));
                 allColorsInputted[2] = unpackArrays(args.getCharArray(COLORS_INPUTTED_FRONT));

@@ -6,8 +6,6 @@ import android.hardware.Camera.Size;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.FrameLayout;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,13 +16,12 @@ import static android.content.ContentValues.TAG;
  * Created by development on 8/15/17.
  */
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
-    private SurfaceHolder surfaceHolder;
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     protected Camera camera;
-    //private boolean surfaceWasDestroyed;
-
     Size previewSize;
+    //private boolean surfaceWasDestroyed;
     List<Size> mSupportedPreviewSizes;
+    private SurfaceHolder surfaceHolder;
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -68,7 +65,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // empty. Take care of releasing the Camera preview in your activity.
         Log.d("Surface Destroyed", "TRUE");
         //Stop Preview if user exited application but parent fragment was not destroyed
-        if(camera != null) {
+        if (camera != null) {
             camera.stopPreview();
         }
     }
@@ -77,7 +74,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
-        if (surfaceHolder.getSurface() == null){
+        if (surfaceHolder.getSurface() == null) {
             // preview surface does not exist
             Log.d("Surface Changed", "FALSE");
             return;
@@ -88,7 +85,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // stop preview before making changes
         try {
             camera.stopPreview();
-        } catch (Exception e){
+        } catch (Exception e) {
             // ignore: tried to stop a non-existent preview
         }
 
@@ -107,14 +104,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             camera.setPreviewDisplay(surfaceHolder);
             camera.setDisplayOrientation(90);
             camera.startPreview();
-        } catch (Exception e){
+        } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
         final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio=(double)h / w;
+        double targetRatio = (double) h / w;
 
         if (sizes == null) return null;
 

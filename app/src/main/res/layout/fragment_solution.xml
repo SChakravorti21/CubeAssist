@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/solution_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="comschakravorti21.github.cubeassist.MainActivity"
-    android:animateLayoutChanges="true">
+    android:animateLayoutChanges="true"
+    tools:context="comschakravorti21.github.cubeassist.MainActivity">
 
     <TextView
         android:id="@+id/scramble_view"
@@ -29,34 +28,34 @@
         android:id="@+id/phase_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/scramble_view"
         android:gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:layout_below="@id/scramble_view">
+        android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/rewind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_chevron_left"/>
+            android:src="@drawable/ic_chevron_left" />
 
         <TextView
             android:id="@+id/phase_view"
-            android:text="@string/initial_phase"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:gravity="center"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
+            android:gravity="center"
+            android:text="@string/initial_phase"
             android:textColor="@color/textColorPrimary"
-            android:textSize="20dp"/>
+            android:textSize="20dp" />
 
         <ImageButton
             android:id="@+id/skip_forward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_chevron_right"
-            android:hapticFeedbackEnabled="true"/>
+            android:hapticFeedbackEnabled="true"
+            android:src="@drawable/ic_chevron_right" />
 
     </LinearLayout>
 
@@ -128,25 +127,25 @@
 
     <android.support.v7.widget.AppCompatSeekBar
         android:id="@+id/speed_adjuster"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:minHeight="48dp"
-        android:maxHeight="48dp"
-        android:minWidth="150dp"
-        android:maxWidth="150dp"
-        android:layout_alignParentBottom="true"
+        android:layout_height="wrap_content"
         android:layout_alignEnd="@id/cube_view"
-        android:layout_marginBottom="8dp"/>
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="8dp"
+        android:maxHeight="48dp"
+        android:maxWidth="150dp"
+        android:minHeight="48dp"
+        android:minWidth="150dp" />
 
     <TextView
-        android:text="Speed:"
-        android:padding="0.5dp"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:gravity="center"
-        android:layout_toLeftOf="@id/speed_adjuster"
+        android:layout_alignTop="@id/speed_adjuster"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
-        android:layout_alignTop="@id/speed_adjuster"/>
+        android:layout_toLeftOf="@id/speed_adjuster"
+        android:gravity="center"
+        android:padding="0.5dp"
+        android:text="Speed:" />
 
 </RelativeLayout>

@@ -19,7 +19,7 @@ import android.widget.TextView;
 import java.util.Arrays;
 
 
-public class ColorInputSolutionFragment extends Fragment implements View.OnClickListener{
+public class ColorInputSolutionFragment extends Fragment implements View.OnClickListener {
 
     private View rootView;
     private GridLayout palette;
@@ -91,7 +91,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_color_input, menu);
+        ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_color_input, menu);
     }
 
     @Override
@@ -184,28 +184,41 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
     /**
      * Gets the index for colorsInputted[(index here)] that corresponds to the side currently being painted when in color
      * selection mode. Helper method for paintComponent().
+     *
      * @param side
      * @return index
      */
     private int getIndexOfSide(char side) {
-        switch(side) {
-            case('L'): return 0;
-            case('U'): return 1;
-            case('F'): return 2;
-            case('B'): return 3;
-            case('R'): return 4;
-            default: return 5; //case 'D'
+        switch (side) {
+            case ('L'):
+                return 0;
+            case ('U'):
+                return 1;
+            case ('F'):
+                return 2;
+            case ('B'):
+                return 3;
+            case ('R'):
+                return 4;
+            default:
+                return 5; //case 'D'
         }
     }
 
     private char getSideOfIndex(int index) {
-        switch(index) {
-            case 0: return 'L';
-            case 1: return 'U';
-            case 2: return 'F';
-            case 3: return 'B';
-            case 4: return 'R';
-            default: return 'D'; //case '5'
+        switch (index) {
+            case 0:
+                return 'L';
+            case 1:
+                return 'U';
+            case 2:
+                return 'F';
+            case 3:
+                return 'B';
+            case 4:
+                return 'R';
+            default:
+                return 'D'; //case '5'
         }
     }
 
@@ -213,7 +226,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
         int index = getIndexOfSide(sideChosen);
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                Button selectionButton = (Button)userInputField.getChildAt(i*3+j);
+                Button selectionButton = (Button) userInputField.getChildAt(i * 3 + j);
                 switch (colorsInputted[index][i][j]) {
                     case 'B':
                         selectionButton.setBackgroundResource(R.drawable.cube_button_blue);
@@ -244,7 +257,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
      * Resets the colors inputted in color selection mode to the colors of a cube in its solved state.
      */
     public void resetCubeInputs() {
-        for(int i = 0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             Arrays.fill(colorsInputted[0][i], 'R');
             Arrays.fill(colorsInputted[1][i], 'Y');
             Arrays.fill(colorsInputted[2][i], 'G');
@@ -256,8 +269,8 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
 
     private void nextSide() {
         int currentIndex = getIndexOfSide(sideChosen);
-        if(currentIndex < 5) {
-            sideChosen = getSideOfIndex(currentIndex+1);
+        if (currentIndex < 5) {
+            sideChosen = getSideOfIndex(currentIndex + 1);
             repaintSide();
         }
     }
@@ -267,7 +280,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
         int index = side;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                packageArray[i*3 + j] = colorsInputted[index][i][j];
+                packageArray[i * 3 + j] = colorsInputted[index][i][j];
             }
         }
         return packageArray;
@@ -275,8 +288,8 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
 
     private void previousSide() {
         int currentIndex = getIndexOfSide(sideChosen);
-        if(currentIndex > 0) {
-            sideChosen = getSideOfIndex(currentIndex-1);
+        if (currentIndex > 0) {
+            sideChosen = getSideOfIndex(currentIndex - 1);
             repaintSide();
         }
     }
@@ -287,33 +300,33 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
         colors[1] = "BACK: ";
         colors[2] = "FRONT: ";
 
-        switch(sideChosen) {
-            case('L'):
+        switch (sideChosen) {
+            case ('L'):
                 colors[0] += "\tRed";
                 colors[1] += "\tYellow";
                 colors[2] += "\tWhite";
                 break;
-            case('U'):
+            case ('U'):
                 colors[0] += "\tYellow";
                 colors[1] += "\tBlue";
                 colors[2] += "\tGreen";
                 break;
-            case('F'):
+            case ('F'):
                 colors[0] += "\tGreen";
                 colors[1] += "\tYellow";
                 colors[2] += "\tWhite";
                 break;
-            case('B'):
+            case ('B'):
                 colors[0] += "\tBlue";
                 colors[1] += "\tYellow";
                 colors[2] += "\tWhite";
                 break;
-            case('R'):
+            case ('R'):
                 colors[0] += "\tOrange";
                 colors[1] += "\tYellow";
                 colors[2] += "\tWhite";
                 break;
-            case('D'):
+            case ('D'):
                 colors[0] += "White";
                 colors[1] += "Green";
                 colors[2] += "Blue";
@@ -362,7 +375,7 @@ public class ColorInputSolutionFragment extends Fragment implements View.OnClick
                     break;
             }
 
-            if(view instanceof Button) {
+            if (view instanceof Button) {
                 previousSelection = (Button) view;
             }
             previousSelection.setActivated(true);

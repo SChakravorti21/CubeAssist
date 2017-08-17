@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/action_reset"
         android:icon="@drawable/ic_replay_black"
         android:title="@string/reset_action"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <!-- Settings, should always be in the overflow
     <item android:id="@+id/action_settings"

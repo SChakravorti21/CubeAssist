@@ -5,13 +5,10 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
-
-import static android.widget.ArrayAdapter.createFromResource;
 
 /**
  * Created by development on 8/16/17.
@@ -19,19 +16,8 @@ import static android.widget.ArrayAdapter.createFromResource;
 
 public class CaptureCubeActivity extends AppCompatActivity {
 
-    private Camera camera;
     CameraPreview preview;
-
-    /** Check if this device has a camera */
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
-    }
+    private Camera camera;
 
     public static Camera getCameraInstance(Context context) {
         Camera camera = null;
@@ -43,26 +29,35 @@ public class CaptureCubeActivity extends AppCompatActivity {
         return camera;
     }
 
+    /**
+     * Check if this device has a camera
+     */
+    private boolean checkCameraHardware(Context context) {
+        // this device has a camera
+// no camera on this device
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_capture_cube);
 
-        Spinner sideOptions = (Spinner)findViewById(R.id.side_options);
-        ArrayAdapter<CharSequence> spiinerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.cube_capture_sides, android.R.layout.simple_spinner_dropdown_item);
-        spiinerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sideOptions.setAdapter(spiinerAdapter);
+        Spinner sideOptions = (Spinner) findViewById(R.id.side_options);
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.cube_capture_sides, R.layout.spinner_item);
+        spinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        sideOptions.setAdapter(spinnerAdapter);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if(preview == null && checkCameraHardware(this)) {
+        if (preview == null && checkCameraHardware(this)) {
             camera = getCameraInstance(this);
             preview = new CameraPreview(this, camera);
-            FrameLayout container = (FrameLayout)findViewById(R.id.camera_preview_container);
+            FrameLayout container = (FrameLayout) findViewById(R.id.camera_preview_container);
             container.addView(preview, 0);
         }
     }
@@ -70,7 +65,7 @@ public class CaptureCubeActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(camera != null) {
+        if (camera != null) {
             camera.stopPreview();
             camera.release();
             camera = null;
