@@ -1,5 +1,7 @@
 package comschakravorti21.github.cubeassist;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -12,26 +14,39 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
  * Created by development on 8/16/17.
  */
 
-public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHolder.Callback{
+public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHolder.Callback,
+        View.OnClickListener{
 
     CameraPreview preview;
     private Camera camera;
     private SurfaceView transparentView;
     private SurfaceHolder focusHolder;
+
+    //These views are saved for animation purposes
+    TextView instructions;
+    ImageView toggleInstructions;
+    private boolean showingInstructions;
+    private int animTime;
 
     public static Camera getCameraInstance(Context context) {
         Camera camera = null;
@@ -70,6 +85,16 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         focusHolder.setFormat(PixelFormat.TRANSPARENT);
         focusHolder.addCallback(this);
         focusHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        instructions = (TextView)findViewById(R.id.instructions);
+        toggleInstructions = (ImageView) findViewById(R.id.toggle_instructions);
+        showingInstructions = false;
+        animTime = getResources().getInteger(
+                android.R.integer.config_shortAnimTime);
+
+        instructions.setOnClickListener(this);
+        toggleInstructions.setOnClickListener(this);
+        findViewById(R.id.instructions_layout).setOnClickListener(this);
     }
 
     @Override
@@ -135,5 +160,49 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
 
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if(id == R.id.instructions_layout
+                || id == R.id.instructions
+                || id == R.id.toggle_instructions) {
+            if(showingInstructions) {
+                instructions.animate()
+                        .alpha(0f)
+                        //.translationY(-instructions.getHeight())
+                        .setDuration(animTime)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animator) {
+                                instructions.setVisibility(View.INVISIBLE);
+                            }
+                        });
+
+                toggleInstructions.animate()
+                        .rotation(0)
+                        .setDuration(animTime)
+                        .setListener(null);
+
+                showingInstructions = false;
+            } else {
+                instructions.setAlpha(0f);
+                instructions.setVisibility(View.VISIBLE);
+
+                instructions.animate()
+                        .alpha(1f)
+                        //.translationY(0)
+                        .setDuration(animTime)
+                        .setListener(null);
+
+                toggleInstructions.animate()
+                        .rotation(180)
+                        .setDuration(animTime)
+                        .setListener(null);
+
+                showingInstructions = true;
+            }
+        }
     }
 }
