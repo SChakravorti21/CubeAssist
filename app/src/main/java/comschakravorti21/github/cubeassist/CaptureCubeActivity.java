@@ -177,6 +177,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                             @Override
                             public void onAnimationEnd(Animator animator) {
                                 instructions.setVisibility(View.INVISIBLE);
+                                transparentView.setVisibility(View.VISIBLE);
                             }
                         });
 
@@ -201,6 +202,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                         .setDuration(animTime)
                         .setListener(null);
 
+                transparentView.setVisibility(View.INVISIBLE);
                 showingInstructions = true;
             }
         }
