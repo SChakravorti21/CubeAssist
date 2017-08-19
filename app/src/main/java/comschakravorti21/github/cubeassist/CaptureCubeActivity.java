@@ -39,6 +39,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
     CameraPreview preview;
     private Camera camera;
+    private boolean hasCamera;
     private SurfaceView transparentView;
     private SurfaceHolder focusHolder;
 
@@ -49,13 +50,13 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     private int animTime;
 
     public static Camera getCameraInstance(Context context) {
-        Camera camera = null;
+        Camera c = null;
         try {
-            camera = Camera.open();
+            c = Camera.open();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return camera;
+        return c;
     }
 
     /**
@@ -72,6 +73,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         // Inflate the layout for this fragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_capture_cube);
+        hasCamera = checkCameraHardware(this);
 
         Spinner sideOptions = (Spinner) findViewById(R.id.side_options);
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
@@ -100,11 +102,11 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void onResume() {
         super.onResume();
-        if (preview == null && checkCameraHardware(this)) {
+        if (hasCamera && camera == null) {
             camera = getCameraInstance(this);
             preview = new CameraPreview(this, camera);
             FrameLayout container = (FrameLayout) findViewById(R.id.camera_preview_container);
-            container.addView(preview, 0);
+            container.addView(preview);
         }
     }
 
@@ -112,10 +114,12 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     public void onPause() {
         super.onPause();
         if (camera != null) {
+            //Will prevent the surfaceCreated() callback from taking place
+            //and trying to use the released camera
+            preview.getHolder().removeCallback(preview);
             camera.stopPreview();
             camera.release();
             camera = null;
-            preview.camera = null;
             Log.d("Fragment destroyed", "YES");
         }
     }

@@ -101,9 +101,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // empty. Take care of releasing the Camera preview in your activity.
         Log.d("Surface Destroyed", "TRUE");
         //Stop Preview if user exited application but parent fragment was not destroyed
-        if (camera != null) {
-            camera.stopPreview();
-        }
+//        if (camera != null) {
+//            camera.stopPreview();
+//        }
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
