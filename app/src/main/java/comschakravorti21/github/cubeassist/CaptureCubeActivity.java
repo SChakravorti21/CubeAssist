@@ -38,7 +38,7 @@ import static android.R.attr.width;
  */
 
 public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHolder.Callback,
-        View.OnClickListener, AdapterView.OnItemSelectedListener{
+        View.OnClickListener, AdapterView.OnItemSelectedListener, Camera.PreviewCallback{
 
     CameraPreview preview;
     private Camera camera;
@@ -46,7 +46,10 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     private SurfaceView transparentView;
     private SurfaceHolder focusHolder;
 
-    private char side;
+    private int side;
+    private byte[] data;
+    private int[][] previewPixels;
+    int camImageWidth, camImageHeight;
 
     //These views are saved for animation purposes
     TextView instructions;
@@ -131,48 +134,6 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder surfaceHolder) {
-
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-        Canvas canvas = surfaceHolder.lockCanvas();
-        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-
-        Paint strokePaint= new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setColor(ContextCompat.getColor(this, R.color.colorAccent));
-        strokePaint.setStrokeWidth(3);
-
-        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-
-        int centerX = (metrics.widthPixels / 2);
-        int centerY = (metrics.heightPixels / 2);
-
-        int cubeSideLength = (metrics.widthPixels * 7 / 10);
-        int cubieSideLength = cubeSideLength / 3;
-        int startX = centerX - cubeSideLength / 2;
-        int startY = centerY - cubeSideLength / 2;
-
-        for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
-            for (int y = startY; y < startY + cubeSideLength; y += cubieSideLength ) {
-                canvas.drawRect(x, y,
-                        x + cubieSideLength,
-                        y + cubieSideLength,
-                        strokePaint);
-            }
-        }
-
-        surfaceHolder.unlockCanvasAndPost(canvas);
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
-    }
-
-    @Override
     public void onClick(View view) {
         int id = view.getId();
         if(id == R.id.instructions_layout
@@ -220,22 +181,84 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         }
 
         switch (id) {
-            case R.id.take_picture: 
+            case R.id.take_picture:
+                decodeYUV420SP(previewPixels[side], data, camImageWidth, camImageHeight);
                 break;
         }
     }
 
-
-
-
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
         char side = adapterView.getItemAtPosition(pos).toString().trim().charAt(0);
-        this.side = side;
+        switch (side) {
+            case ('R'):
+                this.side = 0;
+            case ('Y'):
+                this.side = 1;
+            case ('G'):
+                this.side = 2;
+            case ('B'):
+                this.side = 3;
+            case ('O'):
+                this.side = 4;
+            default:
+                this.side = 5; //case 'W'
+        }
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        Camera.Parameters params = camera.getParameters();
+        camImageWidth = params.getPreviewSize().width;
+        camImageHeight = params.getPreviewSize().height;
+
+        this.data = data;
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
+
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+        Canvas canvas = surfaceHolder.lockCanvas();
+        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+
+        Paint strokePaint= new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setColor(ContextCompat.getColor(this, R.color.colorAccent));
+        strokePaint.setStrokeWidth(3);
+
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+
+        int centerX = (metrics.widthPixels / 2);
+        int centerY = (metrics.heightPixels / 2);
+
+        int cubeSideLength = (metrics.widthPixels * 7 / 10);
+        int cubieSideLength = cubeSideLength / 3;
+        int startX = centerX - cubeSideLength / 2;
+        int startY = centerY - cubeSideLength / 2;
+
+        for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
+            for (int y = startY; y < startY + cubeSideLength; y += cubieSideLength ) {
+                canvas.drawRect(x, y,
+                        x + cubieSideLength,
+                        y + cubieSideLength,
+                        strokePaint);
+            }
+        }
+
+        surfaceHolder.unlockCanvasAndPost(canvas);
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
 
     }
 
