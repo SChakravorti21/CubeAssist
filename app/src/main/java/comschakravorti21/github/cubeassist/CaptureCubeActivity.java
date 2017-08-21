@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import static android.R.attr.width;
 
@@ -106,6 +107,9 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         instructions.setOnClickListener(this);
         toggleInstructions.setOnClickListener(this);
         findViewById(R.id.instructions_layout).setOnClickListener(this);
+        findViewById(R.id.take_picture).setOnClickListener(this);
+
+        previewPixels = new int[6][];
     }
 
     @Override
@@ -136,6 +140,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void onClick(View view) {
         int id = view.getId();
+
         if(id == R.id.instructions_layout
                 || id == R.id.instructions
                 || id == R.id.toggle_instructions) {
@@ -182,7 +187,10 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
         switch (id) {
             case R.id.take_picture:
+                //previewPixels[side] = new int[camImageWidth*camImageHeight];
                 decodeYUV420SP(previewPixels[side], data, camImageWidth, camImageHeight);
+                Toast.makeText(this, "Picture captured! Select another side.",
+                        Toast.LENGTH_LONG).show();
                 break;
         }
     }
