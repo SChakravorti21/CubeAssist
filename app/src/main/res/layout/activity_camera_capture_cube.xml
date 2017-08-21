@@ -26,6 +26,7 @@
             android:paddingRight="4dp" />
 
         <ImageButton
+            android:id="@+id/take_picture"
             android:contentDescription="Take a Picture"
             android:layout_width="48dp"
             android:layout_height="48dp"

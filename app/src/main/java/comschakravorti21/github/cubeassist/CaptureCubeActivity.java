@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -30,18 +31,22 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import static android.R.attr.width;
+
 /**
  * Created by development on 8/16/17.
  */
 
 public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHolder.Callback,
-        View.OnClickListener{
+        View.OnClickListener, AdapterView.OnItemSelectedListener{
 
     CameraPreview preview;
     private Camera camera;
     private boolean hasCamera;
     private SurfaceView transparentView;
     private SurfaceHolder focusHolder;
+
+    private char side;
 
     //These views are saved for animation purposes
     TextView instructions;
@@ -80,6 +85,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                 R.array.cube_capture_sides, R.layout.spinner_item);
         spinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         sideOptions.setAdapter(spinnerAdapter);
+        sideOptions.setOnItemSelectedListener(this);
 
         transparentView = (SurfaceView)findViewById(R.id.grid_view);
         transparentView.setZOrderOnTop(true);
@@ -106,7 +112,8 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
             camera = getCameraInstance(this);
             preview = new CameraPreview(this, camera);
             FrameLayout container = (FrameLayout) findViewById(R.id.camera_preview_container);
-            container.addView(preview);
+            container.addView(preview, 0
+            );
         }
     }
 
@@ -120,7 +127,6 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
             camera.stopPreview();
             camera.release();
             camera = null;
-            Log.d("Fragment destroyed", "YES");
         }
     }
 
@@ -208,6 +214,67 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
                 transparentView.setVisibility(View.INVISIBLE);
                 showingInstructions = true;
+            }
+
+            return;
+        }
+
+        switch (id) {
+            case R.id.take_picture: 
+                break;
+        }
+    }
+
+
+
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
+        char side = adapterView.getItemAtPosition(pos).toString().trim().charAt(0);
+        this.side = side;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    //  Byte decoder : ---------------------------------------------------------------------
+    void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
+        // Pulled directly from:
+        // http://ketai.googlecode.com/svn/trunk/ketai/src/edu/uic/ketai/inputService/KetaiCamera.java
+        final int frameSize = width * height;
+
+        for (int j = 0, yp = 0; j < height; j++) {
+            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+            for (int i = 0; i < width; i++, yp++) {
+                int y = (0xff & ((int) yuv420sp[yp])) - 16;
+                if (y < 0)
+                    y = 0;
+                if ((i & 1) == 0) {
+                    v = (0xff & yuv420sp[uvp++]) - 128;
+                    u = (0xff & yuv420sp[uvp++]) - 128;
+                }
+
+                int y1192 = 1192 * y;
+                int r = (y1192 + 1634 * v);
+                int g = (y1192 - 833 * v - 400 * u);
+                int b = (y1192 + 2066 * u);
+
+                if (r < 0)
+                    r = 0;
+                else if (r > 262143)
+                    r = 262143;
+                if (g < 0)
+                    g = 0;
+                else if (g > 262143)
+                    g = 262143;
+                if (b < 0)
+                    b = 0;
+                else if (b > 262143)
+                    b = 262143;
+
+                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
             }
         }
     }
