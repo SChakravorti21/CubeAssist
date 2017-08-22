@@ -8,6 +8,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -35,33 +40,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private byte[] data;
     private int[][] previewPixels;
+    private Bitmap[] previewBitmaps;
     int camImageWidth, camImageHeight;
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-
-        int centerX = (metrics.widthPixels / 2);
-        int centerY = (metrics.heightPixels / 2);
-
-        int cubeSideLength = (metrics.widthPixels * 3 / 5);
-        int cubieSideLength = cubeSideLength / 3;
-        int startX = centerX - cubeSideLength / 2;
-        int startY = centerY - cubeSideLength / 2;
-
-        for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
-            for (int y = startY; x < startY + cubeSideLength; y += cubieSideLength ) {
-                canvas.drawRoundRect(x, y,
-                        x + cubieSideLength,
-                        y + cubeSideLength,
-                        cubieSideLength / 5,
-                        cubieSideLength / 5,
-                        strokePaint);
-            }
-        }
-    }
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -80,7 +60,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         strokePaint.setStrokeWidth(6);
         setWillNotDraw(true);
 
-
+        previewBitmaps = new Bitmap[6];
         previewPixels = new int[6][];
     }
 
@@ -171,11 +151,40 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void saveCurrentBitmap(int side) {
         Log.d("Width", "" + camImageWidth);
         Log.d("Height", "" + camImageHeight);
-        previewPixels[side] = decodeYUV420SP(data, camImageWidth, camImageHeight);
-        Bitmap bitmap = Bitmap.createBitmap(previewPixels[side], camImageWidth,
-                camImageHeight, Bitmap.Config.ARGB_8888);
+
+        //The decodeYUV420 way
+//        previewPixels[side] = decodeYUV420SP(data, camImageWidth, camImageHeight);
+//        Bitmap bitmap = Bitmap.createBitmap(previewPixels[side], camImageWidth,
+//                camImageHeight, Bitmap.Config.ARGB_8888);
+//
+
+        //The RenderScript way
+        Bitmap bitmap2 = Bitmap.createBitmap(camImageWidth, camImageHeight, Bitmap.Config.ARGB_8888);
+        Allocation bmData = renderScriptNV21ToRGBA888(
+                getContext(),
+                camImageWidth,
+                camImageHeight,
+                data);
+        Log.d("Data null", "" + (data == null));
+        Log.d("Bitmap null", "" + (bitmap2 == null));
+        Log.d("Side", "" + side);
+        bmData.copyTo(bitmap2);
+        previewBitmaps[side] = bitmap2;
+
         Toast.makeText(getContext(), "Picture captured! Select another side.",
-                Toast.LENGTH_LONG).show();
+                Toast.LENGTH_SHORT).show();
+    }
+
+    public boolean resolveColors(int centerX, int centerY, int startX, int startY,
+                         int cubeSideLength, int cubieSideLength) {
+        for (int i = 0; i < previewBitmaps.length; i++) {
+            if(previewBitmaps[i] == null) {
+                Toast.makeText(getContext(), "Please capture all six sides first",
+                        Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+        return true;
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
@@ -240,5 +249,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         return rgb;
+    }
+
+    private Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+        RenderScript rs = RenderScript.create(context);
+        ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+        Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+        Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+
+        Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+        Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+
+        in.copyFrom(nv21);
+
+        yuvToRgbIntrinsic.setInput(in);
+        yuvToRgbIntrinsic.forEach(out);
+        return out;
     }
 }

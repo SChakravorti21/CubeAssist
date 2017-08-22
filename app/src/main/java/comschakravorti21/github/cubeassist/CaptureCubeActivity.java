@@ -37,6 +37,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import static android.R.attr.centerX;
+import static android.R.attr.centerY;
+import static android.R.attr.start;
+import static android.R.attr.startX;
+import static android.R.attr.startY;
 import static android.R.attr.width;
 
 /**
@@ -52,6 +57,12 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     private SurfaceView transparentView;
     private SurfaceHolder focusHolder;
 
+    //int values used to store where the grid is on-screen
+    //passed onto the preview frame for processing cube's colors
+    int centerX, centerY, startX, startY,
+        cubeSideLength, cubieSideLength;
+
+    //Value used to store which side's picture is being taken
     private int side;
 
     //These views are saved for animation purposes
@@ -91,6 +102,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         toggleInstructions.setOnClickListener(this);
         findViewById(R.id.instructions_layout).setOnClickListener(this);
         findViewById(R.id.take_picture).setOnClickListener(this);
+        findViewById(R.id.solve_cube).setOnClickListener(this);
     }
 
     @Override
@@ -171,6 +183,9 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
             case R.id.take_picture:
                 preview.saveCurrentBitmap(side);
                 break;
+            case R.id.solve_cube:
+                preview.resolveColors(centerX, centerY, startX, startY,
+                        cubeSideLength, cubieSideLength);
         }
     }
 
@@ -180,16 +195,22 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         switch (side) {
             case ('R'):
                 this.side = 0;
+                break;
             case ('Y'):
                 this.side = 1;
+                break;
             case ('G'):
                 this.side = 2;
+                break;
             case ('B'):
                 this.side = 3;
+                break;
             case ('O'):
                 this.side = 4;
+                break;
             default:
                 this.side = 5; //case 'W'
+                break;
         }
     }
 
@@ -215,13 +236,13 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
 
-        int centerX = (metrics.widthPixels / 2);
-        int centerY = (metrics.heightPixels / 2);
+        centerX = (metrics.widthPixels / 2);
+        centerY = (metrics.heightPixels / 2);
 
-        int cubeSideLength = (metrics.widthPixels * 7 / 10);
-        int cubieSideLength = cubeSideLength / 3;
-        int startX = centerX - cubeSideLength / 2;
-        int startY = centerY - cubeSideLength / 2;
+        cubeSideLength = (metrics.widthPixels * 7 / 10);
+        cubieSideLength = cubeSideLength / 3;
+        startX = centerX - cubeSideLength / 2;
+        startY = centerY - cubeSideLength / 2;
 
         for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
             for (int y = startY; y < startY + cubeSideLength; y += cubieSideLength ) {
@@ -255,22 +276,5 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
      */
     private boolean checkCameraHardware(Context context) {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
-    }
-
-    private Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
-        RenderScript rs = RenderScript.create(context);
-        ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
-
-        Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
-        Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
-
-        Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-        Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
-
-        in.copyFrom(nv21);
-
-        yuvToRgbIntrinsic.setInput(in);
-        yuvToRgbIntrinsic.forEach(out);
-        return out;
     }
 }
