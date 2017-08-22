@@ -327,9 +327,9 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                 colors[2] += "\tWhite";
                 break;
             case ('D'):
-                colors[0] += "White";
-                colors[1] += "Green";
-                colors[2] += "Blue";
+                colors[0] += "\tWhite";
+                colors[1] += "\tGreen";
+                colors[2] += "\tBlue";
                 break;
         }
 

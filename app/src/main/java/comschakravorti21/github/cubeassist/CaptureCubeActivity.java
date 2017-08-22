@@ -15,6 +15,11 @@ import android.graphics.PorterDuff;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Debug;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -39,7 +44,7 @@ import static android.R.attr.width;
  */
 
 public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHolder.Callback,
-        View.OnClickListener, AdapterView.OnItemSelectedListener, Camera.PreviewCallback{
+        View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     CameraPreview preview;
     private Camera camera;
@@ -48,34 +53,12 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     private SurfaceHolder focusHolder;
 
     private int side;
-    private byte[] data;
-    private int[][] previewPixels;
-    int camImageWidth, camImageHeight;
 
     //These views are saved for animation purposes
     TextView instructions;
     ImageView toggleInstructions;
     private boolean showingInstructions;
     private int animTime;
-
-    public static Camera getCameraInstance(Context context) {
-        Camera c = null;
-        try {
-            c = Camera.open();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return c;
-    }
-
-    /**
-     * Check if this device has a camera
-     */
-    private boolean checkCameraHardware(Context context) {
-        // this device has a camera
-// no camera on this device
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +91,6 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         toggleInstructions.setOnClickListener(this);
         findViewById(R.id.instructions_layout).setOnClickListener(this);
         findViewById(R.id.take_picture).setOnClickListener(this);
-
-        previewPixels = new int[6][];
     }
 
     @Override
@@ -119,8 +100,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
             camera = getCameraInstance(this);
             preview = new CameraPreview(this, camera);
             FrameLayout container = (FrameLayout) findViewById(R.id.camera_preview_container);
-            container.addView(preview, 0
-            );
+            container.addView(preview, 0);
         }
     }
 
@@ -129,8 +109,10 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         super.onPause();
         if (camera != null) {
             //Will prevent the surfaceCreated() callback from taking place
-            //and trying to use the released camera
+            //and prevent trying to use the released camera
             preview.getHolder().removeCallback(preview);
+            //prevent onPreviewFrame() from being called after camera released
+            preview.camera.setPreviewCallback(null);
             camera.stopPreview();
             camera.release();
             camera = null;
@@ -187,10 +169,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
         switch (id) {
             case R.id.take_picture:
-                //previewPixels[side] = new int[camImageWidth*camImageHeight];
-                decodeYUV420SP(previewPixels[side], data, camImageWidth, camImageHeight);
-                Toast.makeText(this, "Picture captured! Select another side.",
-                        Toast.LENGTH_LONG).show();
+                preview.saveCurrentBitmap(side);
                 break;
         }
     }
@@ -217,15 +196,6 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
-    }
-
-    @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
-        Camera.Parameters params = camera.getParameters();
-        camImageWidth = params.getPreviewSize().width;
-        camImageHeight = params.getPreviewSize().height;
-
-        this.data = data;
     }
 
     @Override
@@ -270,43 +240,37 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
     }
 
-    //  Byte decoder : ---------------------------------------------------------------------
-    void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
-        // Pulled directly from:
-        // http://ketai.googlecode.com/svn/trunk/ketai/src/edu/uic/ketai/inputService/KetaiCamera.java
-        final int frameSize = width * height;
-
-        for (int j = 0, yp = 0; j < height; j++) {
-            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
-            for (int i = 0; i < width; i++, yp++) {
-                int y = (0xff & ((int) yuv420sp[yp])) - 16;
-                if (y < 0)
-                    y = 0;
-                if ((i & 1) == 0) {
-                    v = (0xff & yuv420sp[uvp++]) - 128;
-                    u = (0xff & yuv420sp[uvp++]) - 128;
-                }
-
-                int y1192 = 1192 * y;
-                int r = (y1192 + 1634 * v);
-                int g = (y1192 - 833 * v - 400 * u);
-                int b = (y1192 + 2066 * u);
-
-                if (r < 0)
-                    r = 0;
-                else if (r > 262143)
-                    r = 262143;
-                if (g < 0)
-                    g = 0;
-                else if (g > 262143)
-                    g = 262143;
-                if (b < 0)
-                    b = 0;
-                else if (b > 262143)
-                    b = 262143;
-
-                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
-            }
+    public static Camera getCameraInstance(Context context) {
+        Camera c = null;
+        try {
+            c = Camera.open();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return c;
+    }
+
+    /**
+     * Check if this device has a camera
+     */
+    private boolean checkCameraHardware(Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    private Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+        RenderScript rs = RenderScript.create(context);
+        ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+        Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+        Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+
+        Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+        Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+
+        in.copyFrom(nv21);
+
+        yuvToRgbIntrinsic.setInput(in);
+        yuvToRgbIntrinsic.forEach(out);
+        return out;
     }
 }

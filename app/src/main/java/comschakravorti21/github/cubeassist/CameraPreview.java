@@ -2,6 +2,7 @@ package comschakravorti21.github.cubeassist;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -11,6 +12,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,13 +23,19 @@ import static android.content.ContentValues.TAG;
  * Created by development on 8/15/17.
  */
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback,
+        Camera.PreviewCallback {
+
     protected Camera camera;
     Size previewSize;
     //private boolean surfaceWasDestroyed;
     List<Size> supportedPreviewSizes;
     private SurfaceHolder surfaceHolder;
     private Paint strokePaint;
+
+    private byte[] data;
+    private int[][] previewPixels;
+    int camImageWidth, camImageHeight;
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -71,6 +79,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         strokePaint.setColor(Color.BLACK);
         strokePaint.setStrokeWidth(6);
         setWillNotDraw(true);
+
+
+        previewPixels = new int[6][];
     }
 
     @Override
@@ -82,6 +93,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (supportedPreviewSizes != null) {
             previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
         }
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        Camera.Parameters params = camera.getParameters();
+        camImageWidth = params.getPreviewSize().width;
+        camImageHeight = params.getPreviewSize().height;
+
+        this.data = data;
     }
 
     /* Callback that is called when the surface is created or orientation changes */
@@ -140,10 +160,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             camera.setPreviewDisplay(surfaceHolder);
             camera.setDisplayOrientation(90);
             camera.startPreview();
+
+            camera.setPreviewCallback(this);
             invalidate();
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
+    }
+
+    public void saveCurrentBitmap(int side) {
+        Log.d("Width", "" + camImageWidth);
+        Log.d("Height", "" + camImageHeight);
+        previewPixels[side] = decodeYUV420SP(data, camImageWidth, camImageHeight);
+        Bitmap bitmap = Bitmap.createBitmap(previewPixels[side], camImageWidth,
+                camImageHeight, Bitmap.Config.ARGB_8888);
+        Toast.makeText(getContext(), "Picture captured! Select another side.",
+                Toast.LENGTH_LONG).show();
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
@@ -178,4 +210,35 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return optimalSize;
     }
 
+    //  Byte decoder : ---------------------------------------------------------------------
+    private int[] decodeYUV420SP( byte[] yuv420sp, int width, int height) {
+
+        final int frameSize = width * height;
+        int rgb[] = new int[width*height];
+
+        for (int j = 0, yp = 0; j < height; j++) {
+            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+            for (int i = 0; i < width; i++, yp++) {
+                int y = (0xff & ((int) yuv420sp[yp])) - 16;
+                if (y < 0) y = 0;
+                if ((i & 1) == 0) {
+                    v = (0xff & yuv420sp[uvp++]) - 128;
+                    u = (0xff & yuv420sp[uvp++]) - 128;
+                }
+
+                int y1192 = 1192 * y;
+                int r = (y1192 + 1634 * v);
+                int g = (y1192 - 833 * v - 400 * u);
+                int b = (y1192 + 2066 * u);
+
+                if (r < 0) r = 0; else if (r > 262143) r = 262143;
+                if (g < 0) g = 0; else if (g > 262143) g = 262143;
+                if (b < 0) b = 0; else if (b > 262143) b = 262143;
+
+                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
+            }
+        }
+
+        return rgb;
+    }
 }
