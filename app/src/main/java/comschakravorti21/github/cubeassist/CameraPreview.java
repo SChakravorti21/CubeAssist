@@ -22,6 +22,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.List;
 
+import static android.R.attr.y;
 import static android.content.ContentValues.TAG;
 
 /**
@@ -36,10 +37,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     //private boolean surfaceWasDestroyed;
     List<Size> supportedPreviewSizes;
     private SurfaceHolder surfaceHolder;
-    private Paint strokePaint;
 
     private byte[] data;
-    private int[][] previewPixels;
+    //private int[][] previewPixels;
     private Bitmap[] previewBitmaps;
     int camImageWidth, camImageHeight;
 
@@ -54,14 +54,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // deprecated setting, but required on Android versions prior to 3.0
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setColor(Color.BLACK);
-        strokePaint.setStrokeWidth(6);
-        setWillNotDraw(true);
-
         previewBitmaps = new Bitmap[6];
-        previewPixels = new int[6][];
+        //previewPixels = new int[6][];
     }
 
     @Override
@@ -149,8 +143,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void saveCurrentBitmap(int side) {
-        Log.d("Width", "" + camImageWidth);
-        Log.d("Height", "" + camImageHeight);
+       // Log.d("Width", "" + camImageWidth);
+        //Log.d("Height", "" + camImageHeight);
 
         //The decodeYUV420 way
 //        previewPixels[side] = decodeYUV420SP(data, camImageWidth, camImageHeight);
@@ -159,32 +153,98 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 //
 
         //The RenderScript way
-        Bitmap bitmap2 = Bitmap.createBitmap(camImageWidth, camImageHeight, Bitmap.Config.ARGB_8888);
-        Allocation bmData = renderScriptNV21ToRGBA888(
+        Bitmap bitmap = Bitmap.createBitmap(camImageWidth, camImageHeight, Bitmap.Config.ARGB_8888);
+        Allocation bitmapData = renderScriptNV21ToRGBA888(
                 getContext(),
                 camImageWidth,
                 camImageHeight,
                 data);
+
         Log.d("Data null", "" + (data == null));
-        Log.d("Bitmap null", "" + (bitmap2 == null));
+        Log.d("Bitmap null", "" + (bitmap == null));
         Log.d("Side", "" + side);
-        bmData.copyTo(bitmap2);
-        previewBitmaps[side] = bitmap2;
+
+        bitmapData.copyTo(bitmap);
+        previewBitmaps[side] = bitmap;
+
+        Log.d("Width", "" + bitmap.getWidth());
+        Log.d("Height", "" + bitmap.getHeight());
 
         Toast.makeText(getContext(), "Picture captured! Select another side.",
                 Toast.LENGTH_SHORT).show();
     }
 
-    public boolean resolveColors(int centerX, int centerY, int startX, int startY,
+    public char[][][] resolveColors(int centerX, int centerY, int startX, int startY,
                          int cubeSideLength, int cubieSideLength) {
+        //First check if any of the Bitmaps are null, can't do comparison
         for (int i = 0; i < previewBitmaps.length; i++) {
             if(previewBitmaps[i] == null) {
                 Toast.makeText(getContext(), "Please capture all six sides first",
                         Toast.LENGTH_LONG).show();
-                return false;
+                return null;
             }
         }
-        return true;
+
+        char[] indexColors = {'R', 'Y', 'G', 'B', 'O', 'W'};
+        float[][] centerColors = new float[6][];
+        for (int i = 0; i < centerColors.length; i++) {
+            float[] colorHSV = new float[3];
+            Color.colorToHSV(previewBitmaps[i].getPixel(centerY, centerX),
+                    colorHSV);
+            centerColors[i] = colorHSV;
+            Log.d("Center Hue " + indexColors[i], "" + centerColors[i][0]);
+            Log.d("Center Saturation " + indexColors[i], "" + centerColors[i][1]);
+            Log.d("Center Value " + indexColors[i], "" + centerColors[i][2]);
+
+        }
+
+        //startX = camImageHeight - (startX + cubieSideLength * 3);
+        //startY = camImageWidth - (startY + cubieSideLength * 3);
+
+        //Log.d("Start X", "" + startX);
+        //Log.d("Start Y", "" + startY);
+        int y = startY;
+        int x = startX;
+        startY = startX;
+        startX = y;
+
+        char[][][] colors = new char[6][3][3];
+        for (int i = 0; i < previewBitmaps.length; i++) {
+            for (int j = 0; j < 3; j++, startX += cubieSideLength) {
+                for (int k = 0; k < 3; k++, startY += cubieSideLength) {
+                    float[] colorHSV = new float[3];
+                    Color.colorToHSV(previewBitmaps[i]
+                                    .getPixel((int)(startX + 0.5 * cubieSideLength),
+                                            (int)(startY + 0.5 * cubieSideLength)),
+                            colorHSV);
+
+                    float hue = colorHSV[0];
+                    char color = indexColors[i];
+                    if(colorHSV[1] < 0.3) {
+                        colors[i][j][k] = color;
+                        Log.d("" + i + ", " + j + ", " + k, " " + color);
+                        continue;
+                    }
+
+                    int minDiff = (int)(Math.abs(hue - centerColors[i][0]));
+
+                    for (int l = 0; l < centerColors.length; l++) {
+                        int diff = (int)(Math.abs(hue - centerColors[l][0]));
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            color = indexColors[l];
+                        }
+                    }
+
+                    colors[i][j][k] = color;
+                    Log.d("" + i + ", " + j + ", " + k, " " + color);
+                }
+                startY = x;
+            }
+            startX = y;
+        }
+
+        return colors;
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
