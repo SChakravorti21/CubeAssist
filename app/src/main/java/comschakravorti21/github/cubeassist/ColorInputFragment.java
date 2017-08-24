@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,8 +16,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
-
 import java.util.Arrays;
+
+import static comschakravorti21.github.cubeassist.MainActivity.CAMERA_INPUT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_BACK;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_DOWN;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_FRONT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_LEFT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_RIGHT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_UP;
+import static comschakravorti21.github.cubeassist.MainActivity.INITIAL_INPUT_TYPE;
+import static comschakravorti21.github.cubeassist.MainActivity.MANUAL_COLOR_INPUT;
+import static comschakravorti21.github.cubeassist.R.id.container;
 
 
 public class ColorInputFragment extends Fragment implements View.OnClickListener {
@@ -58,24 +69,30 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
             case R.id.generate_solution:
                 TextSolutionFragment fragment = new TextSolutionFragment();
                 Bundle args = new Bundle();
-                args.putString(TextSolutionFragment.INITIAL_INPUT_TYPE,
-                        TextSolutionFragment.MANUAL_COLOR_INPUT);
-                args.putCharArray(TextSolutionFragment.COLORS_INPUTTED_LEFT,
+                args.putString(INITIAL_INPUT_TYPE,
+                        MANUAL_COLOR_INPUT);
+
+                args.putCharArray(COLORS_INPUTTED_LEFT,
                         packageSide(getIndexOfSide('L')));
-                args.putCharArray(TextSolutionFragment.COLORS_INPUTTED_RIGHT,
+
+                args.putCharArray(COLORS_INPUTTED_RIGHT,
                         packageSide(getIndexOfSide('R')));
-                args.putCharArray(TextSolutionFragment.COLORS_INPUTTED_UP,
+
+                args.putCharArray(COLORS_INPUTTED_UP,
                         packageSide(getIndexOfSide('U')));
-                args.putCharArray(TextSolutionFragment.COLORS_INPUTTED_DOWN,
+
+                args.putCharArray(COLORS_INPUTTED_DOWN,
                         packageSide(getIndexOfSide('D')));
-                args.putCharArray(TextSolutionFragment.COLORS_INPUTTED_FRONT,
+
+                args.putCharArray(COLORS_INPUTTED_FRONT,
                         packageSide(getIndexOfSide('F')));
-                args.putCharArray(TextSolutionFragment.COLORS_INPUTTED_BACK,
+
+                args.putCharArray(COLORS_INPUTTED_BACK,
                         packageSide(getIndexOfSide('B')));
                 fragment.setArguments(args);
 
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, fragment, "Colors Inputted")
+                        .replace(container, fragment, "Colors Inputted")
                         .addToBackStack(null)
                         .commit();
                 break;
@@ -89,8 +106,9 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
 
         colorSelected = 'B'; //Set blue as the initial default color
         sideChosen = 'U';
-        colorsInputted = new char[6][3][3];
-        resetCubeInputs();
+        if(colorsInputted == null) {
+            resetCubeInputs();
+        }
     }
 
 
@@ -300,6 +318,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
      * Resets the colors inputted in color selection mode to the colors of a cube in its solved state.
      */
     private void resetCubeInputs() {
+        colorsInputted = new char[6][3][3];
         for (int i = 0; i < 3; i++) {
             Arrays.fill(colorsInputted[0][i], 'R');
             Arrays.fill(colorsInputted[1][i], 'Y');
@@ -307,6 +326,27 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
             Arrays.fill(colorsInputted[3][i], 'B');
             Arrays.fill(colorsInputted[4][i], 'O');
             Arrays.fill(colorsInputted[5][i], 'W');
+        }
+    }
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        if (args != null) {
+            Log.d("Bundle null", "FLASE");
+            String initInputType = args.getString(INITIAL_INPUT_TYPE);
+            if (initInputType != null && initInputType.equals(CAMERA_INPUT)) {
+                Log.d("CAMERA INPUT", "TRUEE");
+                colorsInputted = new char[6][][];
+                colorsInputted[0] = unpackArrays(args.getCharArray(COLORS_INPUTTED_LEFT));
+                colorsInputted[1] = unpackArrays(args.getCharArray(COLORS_INPUTTED_UP));
+                colorsInputted[2] = unpackArrays(args.getCharArray(COLORS_INPUTTED_FRONT));
+                colorsInputted[3] = unpackArrays(args.getCharArray(COLORS_INPUTTED_BACK));
+                colorsInputted[4] = unpackArrays(args.getCharArray(COLORS_INPUTTED_RIGHT));
+                colorsInputted[5] = unpackArrays(args.getCharArray(COLORS_INPUTTED_DOWN));
+            }
+        } else {
+            Log.d("Bundle null", "TRUEE");
         }
     }
 
@@ -375,6 +415,14 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
             }
         }
         return packageArray;
+    }
+
+    private char[][] unpackArrays(char[] colorsArray) {
+        char[][] unpackedArray = new char[3][3];
+        for (int i = 0; i < colorsArray.length; i++) {
+            unpackedArray[i / 3][i % 3] = colorsArray[i];
+        }
+        return unpackedArray;
     }
 
     private void previousSide() {

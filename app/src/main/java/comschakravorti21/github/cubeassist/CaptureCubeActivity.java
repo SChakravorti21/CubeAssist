@@ -3,6 +3,7 @@ package comschakravorti21.github.cubeassist;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -23,6 +24,17 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import static comschakravorti21.github.cubeassist.MainActivity.ALL_COLORS_INPUTTED;
+import static comschakravorti21.github.cubeassist.MainActivity.CAMERA_INPUT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_BACK;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_DOWN;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_FRONT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_LEFT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_RIGHT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_UP;
+import static comschakravorti21.github.cubeassist.MainActivity.INITIAL_INPUT_TYPE;
+import static comschakravorti21.github.cubeassist.MainActivity.MANUAL_COLOR_INPUT;
 
 /**
  * Created by development on 8/16/17.
@@ -171,8 +183,41 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                 preview.saveCurrentBitmap(side);
                 break;
             case R.id.solve_cube:
-                preview.resolveColors(centerX, centerY, startX, startY,
-                        cubeSideLength, cubieSideLength);
+                char[][][] colors = preview.resolveColors(centerX, centerY, startX, startY,
+                        cubieSideLength);
+
+                if(colors != null) {
+                    Intent colorInputIntent = new Intent(getApplicationContext(),
+                            MainActivity.class);
+
+                    Bundle args = new Bundle();
+                    args.putString(INITIAL_INPUT_TYPE, CAMERA_INPUT);
+
+                    args.putCharArray(COLORS_INPUTTED_LEFT,
+                            packageSide(colors[0]));
+
+                    args.putCharArray(COLORS_INPUTTED_RIGHT,
+                            packageSide(colors[4]));
+
+                    args.putCharArray(COLORS_INPUTTED_UP,
+                            packageSide(colors[1]));
+
+                    args.putCharArray(COLORS_INPUTTED_DOWN,
+                            packageSide(colors[5]));
+
+                    args.putCharArray(COLORS_INPUTTED_FRONT,
+                            packageSide(colors[2]));
+
+                    args.putCharArray(COLORS_INPUTTED_BACK,
+                            packageSide(colors[3]));
+                    colorInputIntent.putExtra(ALL_COLORS_INPUTTED, args);
+
+                    colorInputIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                            Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(colorInputIntent);
+                    finish();
+                }
         }
     }
 
@@ -255,5 +300,15 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
      */
     private boolean checkCameraHardware(Context context) {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    private char[] packageSide(char[][] colors) {
+        char[] packageArray = new char[9];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                packageArray[i * 3 + j] = colors[i][j];
+            }
+        }
+        return packageArray;
     }
 }

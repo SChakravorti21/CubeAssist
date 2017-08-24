@@ -15,18 +15,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_BACK;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_DOWN;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_FRONT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_LEFT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_RIGHT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_UP;
+import static comschakravorti21.github.cubeassist.MainActivity.INITIAL_INPUT_TYPE;
+import static comschakravorti21.github.cubeassist.MainActivity.MANUAL_COLOR_INPUT;
 
 public class TextSolutionFragment extends Fragment implements View.OnClickListener,
         EditScrambleDialog.EditScrambleDialogListener, SeekBar.OnSeekBarChangeListener {
-
-    public static final String INITIAL_INPUT_TYPE = "initial input type";
-    public static final String MANUAL_COLOR_INPUT = "manual color input";
-    public static final String COLORS_INPUTTED_LEFT = "colors inputted left";
-    public static final String COLORS_INPUTTED_UP = "colors inputted up";
-    public static final String COLORS_INPUTTED_FRONT = "colors inputted front";
-    public static final String COLORS_INPUTTED_BACK = "colors inputted back";
-    public static final String COLORS_INPUTTED_RIGHT = "colors inputted right";
-    public static final String COLORS_INPUTTED_DOWN = "colors inputted down";
 
     private View rootView;
     private CubeView cubeView;
@@ -64,12 +65,18 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
         seekBar.setMax(14);
 
         Bundle args = getArguments();
-        inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : "";
-        if (inputType.equals(MANUAL_COLOR_INPUT)) {
-            cubeView.resetScrambleByColorInputs(allColorsInputted);
+        inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : " ";
+        if (inputType != null && inputType.equals(MANUAL_COLOR_INPUT)) {
+            try {
+                cubeView.resetScrambleByColorInputs(allColorsInputted);
 
-            TextView scrambleView = rootView.findViewById(R.id.scramble_view);
-            scrambleView.setText("");
+                TextView scrambleView = rootView.findViewById(R.id.scramble_view);
+                scrambleView.setText("");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Please make valid inputs", Toast.LENGTH_LONG)
+                        .show();
+            }
         }
     }
 
@@ -82,11 +89,6 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
         } else {
             ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_text_solution, menu);
         }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
     }
 
     @Override

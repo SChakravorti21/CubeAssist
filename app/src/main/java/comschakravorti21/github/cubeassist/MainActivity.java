@@ -10,10 +10,25 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
+import static android.R.attr.inputType;
+import static java.util.ResourceBundle.getBundle;
+
 public class MainActivity extends AppCompatActivity implements EditScrambleDialog.EditScrambleDialogListener {
+
+    public static final String INITIAL_INPUT_TYPE = "initial input type";
+    public static final String MANUAL_COLOR_INPUT = "manual color input";
+    public static final String CAMERA_INPUT = "camera input";
+    public static final String ALL_COLORS_INPUTTED = "all colors inputted";
+    public static final String COLORS_INPUTTED_LEFT = "colors inputted left";
+    public static final String COLORS_INPUTTED_UP = "colors inputted up";
+    public static final String COLORS_INPUTTED_FRONT = "colors inputted front";
+    public static final String COLORS_INPUTTED_BACK = "colors inputted back";
+    public static final String COLORS_INPUTTED_RIGHT = "colors inputted right";
+    public static final String COLORS_INPUTTED_DOWN = "colors inputted down";
 
     private final String TEXT_SCRAMBLE = "text scramble";
     private final String COLOR_INPUT = "color input";
@@ -42,32 +57,47 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        solutionFragment = new TextSolutionFragment();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, solutionFragment, "Text Solution Fragment")
-                .addToBackStack(null)
-                .commit();
-
         navDrawerTitles = getResources().getStringArray(R.array.nav_drawer_items);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (NavigationView) findViewById(R.id.left_drawer);
-        drawerList.setCheckedItem(R.id.text_scramble);
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
-                toolbar, R.string.open_drawer, R.string.close_drawer) {
-
-            /** Called when a drawer has settled in a completely closed state. */
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-            }
-
-            /** Called when a drawer has settled in a completely open state. */
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-        };
+                toolbar, R.string.open_drawer, R.string.close_drawer);
 
         drawerLayout.addDrawerListener(drawerToggle);
         drawerList.setNavigationItemSelectedListener(new DrawerClickListener());
+
+
+        Intent intent = getIntent();
+        if(intent != null) {
+            Bundle extras = intent.getExtras();
+            Bundle args = (extras != null) ? extras.getBundle(ALL_COLORS_INPUTTED) : null;
+            String inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : " ";
+
+            if (inputType != null && inputType.equals(CAMERA_INPUT)) {
+                Log.d("Starting Color Input", "true");
+                ColorInputFragment colorInputFragment = new ColorInputFragment();
+
+                if(args != null) {
+                    colorInputFragment.setArguments(args);
+                } else {
+                    Log.d("Colors are null", "TRUE");
+                }
+
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, colorInputFragment, "Color Input Fragment")
+                        .addToBackStack(null)
+                        .commit();
+                drawerList.setCheckedItem(R.id.color_input);
+            } else {
+                solutionFragment = new TextSolutionFragment();
+
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, solutionFragment, "Text Solution Fragment")
+                        .addToBackStack(null)
+                        .commit();
+                drawerList.setCheckedItem(R.id.text_scramble);
+            }
+        }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -135,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                         Intent intent = new Intent(getApplicationContext(), CaptureCubeActivity.class);
                         startActivity(intent);
                         currentMode = "Camera Input";
-                        drawerList.setCheckedItem(R.id.text_scramble);
+                        drawerList.setCheckedItem(R.id.color_input);
                         drawerLayout.closeDrawers();
                     }
                     break;

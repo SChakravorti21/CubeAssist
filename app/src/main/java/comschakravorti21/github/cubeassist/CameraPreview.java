@@ -168,8 +168,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 Toast.LENGTH_SHORT).show();
     }
 
-    public char[][][] resolveColors(int centerX, int centerY, int startX, int startY,
-                                    int cubeSideLength, int cubieSideLength) {
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        previewBitmaps = null;
+    }
+
+    public char[][][] resolveColors(int centerX, int centerY, int startX, int startY, int cubieSideLength) {
         //First check if any of the Bitmaps are null, can't do comparison
         for (int i = 0; i < previewBitmaps.length; i++) {
             if (previewBitmaps[i] == null) {
@@ -219,11 +224,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     char color = indexColors[i];
                     //Do not change the color if it is a center color
                     if (j == 1 && k == 1) {
-                        colors[i][j][k] = color;
+                        colors[i][k][j] = color;
                         Log.d("" + i + ", " + j + ", " + k, " " + color);
                     } else if (colorHSV[1] < 0.3) {
                         //If saturation is very low, it's most likely white
-                        colors[i][j][k] = 'W';
+                        colors[i][k][j] = 'W';
                         Log.d("" + i + ", " + j + ", " + k, " " + 'W');
                     } else {
                         int minDiff = (int) (Math.abs(hue - centerColors[i][0]));
@@ -236,7 +241,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                             }
                         }
 
-                        colors[i][j][k] = color;
+                        colors[i][k][j] = color;
                         Log.d("" + i + ", " + j + ", " + k, " " + color);
                     }
                 }
