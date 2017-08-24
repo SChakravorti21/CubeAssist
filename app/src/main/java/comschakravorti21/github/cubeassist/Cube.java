@@ -841,7 +841,7 @@ public class Cube {
                         for (int k = 0; k < 2; k++) {
                             if (tempColors[k].getColor() == 'W') {
                                 /* Depending on the position of the edge, one of the vertical planes it lies
-								 * in must be cleared of white edges before bringing it up */
+                                 * in must be cleared of white edges before bringing it up */
                                 if (i == 0 && j == 0) {
                                     if (tempColors[k].getDir() == 'L') {
                                         moves += prepareSlot(1, 0, 0, 'W') + performMoves("F ");

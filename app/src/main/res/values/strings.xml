@@ -25,5 +25,6 @@
         \n\t•\t\tTake pictures in good lighting
         \n\t•\t\tKeep the lighting across pictures of all six side consistent
         \n\t•\t\tTry to avoid taking shaky pictures </string>
+    <string name="palette_indicator_text">Palette:</string>
 
 </resources>

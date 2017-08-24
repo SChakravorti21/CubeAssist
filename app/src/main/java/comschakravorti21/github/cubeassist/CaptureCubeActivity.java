@@ -5,44 +5,24 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Debug;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicYuvToRGB;
-import android.renderscript.Type;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import static android.R.attr.centerX;
-import static android.R.attr.centerY;
-import static android.R.attr.start;
-import static android.R.attr.startX;
-import static android.R.attr.startY;
-import static android.R.attr.width;
 
 /**
  * Created by development on 8/16/17.
@@ -52,24 +32,31 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     CameraPreview preview;
+    //int values used to store where the grid is on-screen
+    //passed onto the preview frame for processing cube's colors
+    int centerX, centerY, startX, startY,
+            cubeSideLength, cubieSideLength;
+    //These views are saved for animation purposes
+    TextView instructions;
+    ImageView toggleInstructions;
     private Camera camera;
     private boolean hasCamera;
     private SurfaceView transparentView;
     private SurfaceHolder focusHolder;
-
-    //int values used to store where the grid is on-screen
-    //passed onto the preview frame for processing cube's colors
-    int centerX, centerY, startX, startY,
-        cubeSideLength, cubieSideLength;
-
     //Value used to store which side's picture is being taken
     private int side;
-
-    //These views are saved for animation purposes
-    TextView instructions;
-    ImageView toggleInstructions;
     private boolean showingInstructions;
     private int animTime;
+
+    public static Camera getCameraInstance(Context context) {
+        Camera c = null;
+        try {
+            c = Camera.open();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return c;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,14 +72,14 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         sideOptions.setAdapter(spinnerAdapter);
         sideOptions.setOnItemSelectedListener(this);
 
-        transparentView = (SurfaceView)findViewById(R.id.grid_view);
+        transparentView = (SurfaceView) findViewById(R.id.grid_view);
         transparentView.setZOrderOnTop(true);
         focusHolder = transparentView.getHolder();
         focusHolder.setFormat(PixelFormat.TRANSPARENT);
         focusHolder.addCallback(this);
         focusHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        instructions = (TextView)findViewById(R.id.instructions);
+        instructions = (TextView) findViewById(R.id.instructions);
         toggleInstructions = (ImageView) findViewById(R.id.toggle_instructions);
         showingInstructions = false;
         animTime = getResources().getInteger(
@@ -135,10 +122,10 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     public void onClick(View view) {
         int id = view.getId();
 
-        if(id == R.id.instructions_layout
+        if (id == R.id.instructions_layout
                 || id == R.id.instructions
                 || id == R.id.toggle_instructions) {
-            if(showingInstructions) {
+            if (showingInstructions) {
                 instructions.animate()
                         .alpha(0f)
                         //.translationY(-instructions.getHeight())
@@ -191,7 +178,9 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-        char side = adapterView.getItemAtPosition(pos).toString().trim().charAt(0);
+        char side = adapterView.getItemAtPosition(pos).toString()
+                .trim().charAt(0);
+
         switch (side) {
             case ('R'):
                 this.side = 0;
@@ -229,7 +218,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         Canvas canvas = surfaceHolder.lockCanvas();
         canvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
-        Paint strokePaint= new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setColor(ContextCompat.getColor(this, R.color.colorAccent));
         strokePaint.setStrokeWidth(3);
@@ -244,8 +233,8 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         startX = centerX - cubeSideLength / 2;
         startY = centerY - cubeSideLength / 2;
 
-        for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength ) {
-            for (int y = startY; y < startY + cubeSideLength; y += cubieSideLength ) {
+        for (int x = startX; x < startX + cubeSideLength; x += cubieSideLength) {
+            for (int y = startY; y < startY + cubeSideLength; y += cubieSideLength) {
                 canvas.drawRect(x, y,
                         x + cubieSideLength,
                         y + cubieSideLength,
@@ -259,16 +248,6 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
 
-    }
-
-    public static Camera getCameraInstance(Context context) {
-        Camera c = null;
-        try {
-            c = Camera.open();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return c;
     }
 
     /**
