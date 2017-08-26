@@ -723,7 +723,7 @@ public class CubeView extends View {
                 TextSolutionFragment fragment = (TextSolutionFragment) ((AppCompatActivity) getContext())
                         .getSupportFragmentManager().findFragmentById(R.id.container);
 
-                if (fragment != null) {
+                if (fragment != null && movesToPerform.length() > 0) {
                     fragment.updateMoves(movesToPerform.substring(movesIndex).trim(),
                             movesPerformed.trim(), phaseString);
                 }

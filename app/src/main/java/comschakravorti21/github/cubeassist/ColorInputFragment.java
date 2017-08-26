@@ -69,6 +69,10 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                             @Override
                             public void onAnimationEnd(Animator animation) {
                                 super.onAnimationEnd(animation);
+
+                                //Once the animation ends, reset the rotation,
+                                //Otherwise inputted colors won't be in the
+                                //colorsInputted arrays as they should be
                                 userInputField.setRotation(0);
                                 repaintSide();
                             }
@@ -86,6 +90,10 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                             @Override
                             public void onAnimationEnd(Animator animation) {
                                 super.onAnimationEnd(animation);
+
+                                //Once the animation ends, reset the rotation,
+                                //Otherwise inputted colors won't be in the
+                                //colorsInputted arrays as they should be
                                 userInputField.setRotation(0);
                                 repaintSide();
                             }
