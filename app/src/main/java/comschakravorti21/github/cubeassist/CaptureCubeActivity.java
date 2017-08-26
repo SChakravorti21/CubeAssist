@@ -25,6 +25,8 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.List;
+
 import static comschakravorti21.github.cubeassist.MainActivity.ALL_COLORS_INPUTTED;
 import static comschakravorti21.github.cubeassist.MainActivity.CAMERA_INPUT;
 import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_BACK;
@@ -109,9 +111,11 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
         super.onResume();
         if (hasCamera && camera == null) {
             camera = getCameraInstance(this);
-            preview = new CameraPreview(this, camera);
-            FrameLayout container = (FrameLayout) findViewById(R.id.camera_preview_container);
-            container.addView(preview, 0);
+            if (camera != null) {
+                preview = new CameraPreview(this, camera);
+                FrameLayout container = (FrameLayout) findViewById(R.id.camera_preview_container);
+                container.addView(preview, 0);
+            }
         }
     }
 

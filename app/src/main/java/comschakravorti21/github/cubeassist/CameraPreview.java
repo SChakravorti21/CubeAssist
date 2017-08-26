@@ -118,6 +118,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Camera.Parameters parameters = camera.getParameters();
         parameters.setPreviewSize(previewSize.width, previewSize.height);
 
+        List<String> focusModes = parameters.getSupportedFocusModes();
+        if(focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            Log.d("Supports contin focus", "TRUE");
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        }
         Log.d(TAG, "width: " + previewSize.width);
         Log.d(TAG, "height: " + previewSize.height);
 
@@ -128,8 +133,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             camera.setPreviewDisplay(surfaceHolder);
             camera.setDisplayOrientation(90);
             camera.startPreview();
-
             camera.setPreviewCallback(this);
+
+
             invalidate();
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
@@ -176,8 +182,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public char[][][] resolveColors(int centerX, int centerY, int startX, int startY, int cubieSideLength) {
         //First check if any of the Bitmaps are null, can't do comparison
-        for (int i = 0; i < previewBitmaps.length; i++) {
-            if (previewBitmaps[i] == null) {
+        for (Bitmap previewBitmap : previewBitmaps) {
+            if (previewBitmap == null) {
                 Toast.makeText(getContext(), "Please capture all six sides first",
                         Toast.LENGTH_LONG).show();
                 return null;
