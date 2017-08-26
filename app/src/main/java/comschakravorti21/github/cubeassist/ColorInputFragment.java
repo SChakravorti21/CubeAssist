@@ -1,5 +1,7 @@
 package comschakravorti21.github.cubeassist;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -39,7 +41,8 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
     private char colorSelected;
     private char sideChosen;
     private char[][][] colorsInputted;
-    private String[] instructionColors;
+    private int animTime;
+    //private String[] instructionColors;
 
     public ColorInputFragment() {
         // Required empty public constructor
@@ -58,13 +61,35 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                 rotateMatrix(colorsInputted[getIndexOfSide(sideChosen)],
                         -90,
                         getIndexOfSide(sideChosen));
-                repaintSide();
+
+                userInputField.animate()
+                        .rotation(-90)
+                        .setDuration(animTime)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                super.onAnimationEnd(animation);
+                                userInputField.setRotation(0);
+                                repaintSide();
+                            }
+                        });
                 break;
             case R.id.rotate_right:
                 rotateMatrix(colorsInputted[getIndexOfSide(sideChosen)],
                         90,
                         getIndexOfSide(sideChosen));
-                repaintSide();
+
+                userInputField.animate()
+                        .rotation(90)
+                        .setDuration(animTime)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                super.onAnimationEnd(animation);
+                                userInputField.setRotation(0);
+                                repaintSide();
+                            }
+                        });
                 break;
             case R.id.generate_solution:
                 TextSolutionFragment fragment = new TextSolutionFragment();
@@ -109,6 +134,8 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         if(colorsInputted == null) {
             resetCubeInputs();
         }
+        animTime = getResources().getInteger(
+                android.R.integer.config_shortAnimTime);
     }
 
 
