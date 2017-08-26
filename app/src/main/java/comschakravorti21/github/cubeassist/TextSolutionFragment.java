@@ -15,18 +15,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_BACK;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_DOWN;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_FRONT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_LEFT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_RIGHT;
+import static comschakravorti21.github.cubeassist.MainActivity.COLORS_INPUTTED_UP;
+import static comschakravorti21.github.cubeassist.MainActivity.INITIAL_INPUT_TYPE;
+import static comschakravorti21.github.cubeassist.MainActivity.MANUAL_COLOR_INPUT;
 
 public class TextSolutionFragment extends Fragment implements View.OnClickListener,
-        EditScrambleDialog.EditScrambleDialogListener, SeekBar.OnSeekBarChangeListener{
-
-    public static final String INITIAL_INPUT_TYPE = "initial input type";
-    public static final String MANUAL_COLOR_INPUT = "manual color input";
-    public static final String COLORS_INPUTTED_LEFT = "colors inputted left";
-    public static final String COLORS_INPUTTED_UP = "colors inputted up";
-    public static final String COLORS_INPUTTED_FRONT = "colors inputted front";
-    public static final String COLORS_INPUTTED_BACK = "colors inputted back";
-    public static final String COLORS_INPUTTED_RIGHT = "colors inputted right";
-    public static final String COLORS_INPUTTED_DOWN = "colors inputted down";
+        EditScrambleDialog.EditScrambleDialogListener, SeekBar.OnSeekBarChangeListener {
 
     private View rootView;
     private CubeView cubeView;
@@ -48,7 +49,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        rootView = inflater.inflate(R.layout.activity_solution_copy, container, false);
+        rootView = inflater.inflate(R.layout.fragment_solution, container, false);
         return rootView;
     }
 
@@ -64,12 +65,18 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
         seekBar.setMax(14);
 
         Bundle args = getArguments();
-        inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : "";
-        if(inputType.equals(MANUAL_COLOR_INPUT)) {
-            cubeView.resetScrambleByColorInputs(allColorsInputted);
+        inputType = (args != null) ? args.getString(INITIAL_INPUT_TYPE) : " ";
+        if (inputType != null && inputType.equals(MANUAL_COLOR_INPUT)) {
+            try {
+                cubeView.resetScrambleByColorInputs(allColorsInputted);
 
-            TextView scrambleView = rootView.findViewById(R.id.scramble_view);
-            scrambleView.setText("");
+                TextView scrambleView = rootView.findViewById(R.id.scramble_view);
+                scrambleView.setText("");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Please make valid inputs", Toast.LENGTH_LONG)
+                        .show();
+            }
         }
     }
 
@@ -77,16 +84,11 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        if(inputType.equals(MANUAL_COLOR_INPUT)) {
-            ((Activity)getContext()).getMenuInflater().inflate(R.menu.menu_color_solution, menu);
+        if (inputType.equals(MANUAL_COLOR_INPUT)) {
+            ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_color_solution, menu);
         } else {
             ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_text_solution, menu);
         }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
     }
 
     @Override
@@ -108,10 +110,10 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.skip_forward:
-                cubeView.skipToPhase(cubeView.getPhase()+1);
+                cubeView.skipToPhase(cubeView.getPhase() + 1);
                 break;
             case R.id.rewind:
-                cubeView.skipToPhase(cubeView.getPhase()-1);
+                cubeView.skipToPhase(cubeView.getPhase() - 1);
                 break;
         }
     }
@@ -150,7 +152,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.action_random:
                 TextView scrambleView = rootView.findViewById(R.id.scramble_view);
                 scrambleView.setText(cubeView.randScramble());
@@ -159,7 +161,7 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
                 cubeView.resetCurrentScramble();
                 break;
             case R.id.action_edit_scramble:
-                if(inputType.equals(MANUAL_COLOR_INPUT)) {
+                if (inputType.equals(MANUAL_COLOR_INPUT)) {
                     getActivity().getSupportFragmentManager().popBackStack();
                 } else {
                     Bundle args = new Bundle();
@@ -178,9 +180,9 @@ public class TextSolutionFragment extends Fragment implements View.OnClickListen
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        if(args != null) {
+        if (args != null) {
             String initInputType = args.getString(INITIAL_INPUT_TYPE);
-            if(initInputType != null && initInputType.equals(MANUAL_COLOR_INPUT)) {
+            if (initInputType != null && initInputType.equals(MANUAL_COLOR_INPUT)) {
                 allColorsInputted[0] = unpackArrays(args.getCharArray(COLORS_INPUTTED_LEFT));
                 allColorsInputted[1] = unpackArrays(args.getCharArray(COLORS_INPUTTED_UP));
                 allColorsInputted[2] = unpackArrays(args.getCharArray(COLORS_INPUTTED_FRONT));

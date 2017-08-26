@@ -14,4 +14,17 @@
         as follows, and input your cube\'s colors. When done with ALL SIX SIDES, hit \"Generate
         Solution.\"</string>
     <string name="generate_solution">Generate Solution</string>
+    <string name="instructions">1) Use the drop-up menu in the bottom-left
+        to choose a color.
+        \n2) Find the side of your cube with that center color.
+        \n3) Align the grid with that side of the cube and take a picture of it (the
+        camera will autofocus).
+        \n4) Repeat steps 1-3 for the other five sides.
+
+        \n\nTIPS:
+        \n\t•\t\tTake pictures in good lighting
+        \n\t•\t\tKeep the lighting across pictures of all six side consistent
+        \n\t•\t\tTry to avoid taking shaky pictures </string>
+    <string name="palette_indicator_text">Palette:</string>
+
 </resources>

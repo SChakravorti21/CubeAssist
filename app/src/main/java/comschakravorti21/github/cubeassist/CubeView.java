@@ -25,17 +25,16 @@ import java.util.concurrent.TimeUnit;
 public class CubeView extends View {
 
     public final static int DELAY = 1500;
-
+    //Default scramble
+    private final String DEFAULT_SCRAMBLE = getResources().getString(R.string.default_scramble);
+    TextView toPerformView, performedView;
     private Timer frameTimer;
     private TimerTask animationTask;
     private boolean animationStopped;
     private int speedMultiplier;
-
     private Cube cube = new Cube();
     private boolean hasColorInput;
     private char[][][] colorsInputted;
-    //Default scramble
-    private final String DEFAULT_SCRAMBLE = getResources().getString(R.string.default_scramble);
     private String scramble = DEFAULT_SCRAMBLE,
             sunflower = "",
             whiteCross = "",
@@ -47,7 +46,6 @@ public class CubeView extends View {
     private String[] moveSet;
     private String movesToPerform = "",
             movesPerformed = "";
-
     /*
      * Respective stages of the solution w.r.t the phase variable
      * 0 = sunflower
@@ -63,20 +61,15 @@ public class CubeView extends View {
     private String phaseString;
     //Helps keep track of moves to perform, and allows for painting of moves
     private int movesIndex = 0;
-
     private Paint bluePaint;
     private Paint greenPaint;
     private Paint redPaint;
     private Paint orangePaint;
     private Paint whitePaint;
     private Paint yellowPaint;
-
     private Paint strokePaint;
-
     private int cubieSize;
     private int gap;
-
-    TextView toPerformView, performedView;
 
     public CubeView(Context context) {
         super(context);
@@ -138,8 +131,8 @@ public class CubeView extends View {
         strokePaint.setStrokeWidth(6);
 
         speedMultiplier = 1;
-        cubieSize = (int)dpToPx(22);
-        gap = (int)dpToPx(4);
+        cubieSize = (int) dpToPx(22);
+        gap = (int) dpToPx(4);
         animationStopped = true; //Wait until the user clicks on the cube to start animation
 
         setOnTouchListener(new OnTouchListener() {
@@ -163,32 +156,31 @@ public class CubeView extends View {
                     case MotionEvent.ACTION_UP:
                         float finalX = motionEvent.getX(), finalY = motionEvent.getY();
                         long eventTime = System.currentTimeMillis() - initTime;
-                        int distance = (int)pxToDp(distance(initX, initY, finalX, finalY));
-                        if(eventTime >= MIN_DRAG_TIME || distance >= MIN_DRAG_DISTANCE) {
+                        int distance = (int) pxToDp(distance(initX, initY, finalX, finalY));
+                        if (eventTime >= MIN_DRAG_TIME || distance >= MIN_DRAG_DISTANCE) {
                             if (finalX > initX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the right
-                                if(phase < 7) { //Only do stuff if the solve is not complete yet
+                                if (phase < 7) { //Only do stuff if the solve is not complete yet
                                     performNextMove();
                                     invalidate();
 
                                     UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
                                     updateMoves.execute(getContext());
                                 }
-                            }
-                            else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
+                            } else if (initX > finalX + dpToPx(MIN_DRAG_DISTANCE)) { //Swipe to the left
                                 boolean flag = false;
                                 int prevIndex = movesIndex;
-                                while(movesIndex > 1 && !flag) {
+                                while (movesIndex > 1 && !flag) {
                                     movesIndex--;
-                                    if(movesToPerform.substring(movesIndex - 1, movesIndex).equals(" ")) {
+                                    if (movesToPerform.substring(movesIndex - 1, movesIndex).equals(" ")) {
                                         flag = !flag;
                                     }
                                 }
-                                if(movesIndex == 1) {
+                                if (movesIndex == 1) {
                                     movesIndex = 0;
                                 }
                                 movesPerformed = movesToPerform.substring(0, movesIndex);
-                                if(movesPerformed.length() >= 35) {
-                                    movesPerformed = movesPerformed.substring(movesPerformed.length()-33);
+                                if (movesPerformed.length() >= 35) {
+                                    movesPerformed = movesPerformed.substring(movesPerformed.length() - 33);
                                 }
                                 cube.reverseMoves(movesToPerform.substring(movesIndex, prevIndex));
                                 invalidate();
@@ -197,9 +189,7 @@ public class CubeView extends View {
                                 UpdateUI updateMoves = new UpdateUI(UpdateUI.UPDATE_MOVES_ON_UI);
                                 updateMoves.execute(getContext());
                             }
-                        }
-
-                        else { //Just a click
+                        } else { //Just a click
                             if (animationStopped && phase < 7) {
                                 startAnimation(speedMultiplier);
                             } else if (!animationStopped) {
@@ -215,7 +205,7 @@ public class CubeView extends View {
             private float distance(float initX, float initY, float finalX, float finalY) {
                 float rise = finalY - initY;
                 float run = finalX - initX;
-                return (float)Math.sqrt(run * run + rise * rise);
+                return (float) Math.sqrt(run * run + rise * rise);
             }
 
             private float pxToDp(float px) {
@@ -234,134 +224,134 @@ public class CubeView extends View {
 
         //Paint Reds
         int xVal = gap;
-        int yVal = (cubieSize + gap)*3 + gap*3;
-        for(int y = 2; y>=0; y--) {
-            for(int z = 2; z>=0; z--) {
-                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(z-2),
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
-                        xVal + (cubieSize + gap) * Math.abs(z-2) + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+        int yVal = (cubieSize + gap) * 3 + gap * 3;
+        for (int y = 2; y >= 0; y--) {
+            for (int z = 2; z >= 0; z--) {
+                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(z - 2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
+                        xVal + (cubieSize + gap) * Math.abs(z - 2) + cubieSize,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         colorToPaint(cube.getColor(0, y, z, 'L')));
 
-                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(z-2),
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
-                        xVal + (cubieSize + gap) * Math.abs(z-2) + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(z - 2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
+                        xVal + (cubieSize + gap) * Math.abs(z - 2) + cubieSize,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         strokePaint);
             }
         }
 
         //Paint Yellows
-        xVal += (cubieSize + gap)*3 + gap;
-        for(int x = 0; x<=2; x++) {
-            for(int y = 2; y>=0; y--) {
+        xVal += (cubieSize + gap) * 3 + gap;
+        for (int x = 0; x <= 2; x++) {
+            for (int y = 2; y >= 0; y--) {
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * x,
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
                         xVal + (cubieSize + gap) * x + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         colorToPaint(cube.getColor(x, y, 0, 'U')));
 
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * x,
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
                         xVal + (cubieSize + gap) * x + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         strokePaint);
             }
         }
 
         //Paint Blues
-        yVal -= (cubieSize + gap)*3 + gap;
-        for(int x = 0; x<=2; x++) {
-            for(int z = 2; z>=0; z--) {
+        yVal -= (cubieSize + gap) * 3 + gap;
+        for (int x = 0; x <= 2; x++) {
+            for (int z = 2; z >= 0; z--) {
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * x,
-                        yVal + (cubieSize + gap) * Math.abs(z-2),
+                        yVal + (cubieSize + gap) * Math.abs(z - 2),
                         xVal + (cubieSize + gap) * x + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(z-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        yVal + (cubieSize + gap) * Math.abs(z - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         colorToPaint(cube.getColor(x, 2, z, 'B')));
 
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * x,
-                        yVal + (cubieSize + gap) * Math.abs(z-2),
+                        yVal + (cubieSize + gap) * Math.abs(z - 2),
                         xVal + (cubieSize + gap) * x + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(z-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        yVal + (cubieSize + gap) * Math.abs(z - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         strokePaint);
             }
         }
 
         //Paint Greens
-        yVal += ((cubieSize + gap)*3 + gap)*2;
-        for(int z = 0; z<=2; z++) {
-            for(int x = 0; x<=2; x++) {
+        yVal += ((cubieSize + gap) * 3 + gap) * 2;
+        for (int z = 0; z <= 2; z++) {
+            for (int x = 0; x <= 2; x++) {
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * x,
                         yVal + (cubieSize + gap) * z,
                         xVal + (cubieSize + gap) * x + cubieSize,
                         yVal + (cubieSize + gap) * z + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         colorToPaint(cube.getColor(x, 0, z, 'F')));
 
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * x,
                         yVal + (cubieSize + gap) * z,
                         xVal + (cubieSize + gap) * x + cubieSize,
                         yVal + (cubieSize + gap) * z + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         strokePaint);
             }
         }
 
         //Paint Oranges
-        xVal += (cubieSize + gap)*3 + gap;
-        yVal -= (cubieSize + gap)*3 + gap;
-        for(int y = 2; y>=0; y--) {
-            for(int z = 0; z<=2; z++) {
+        xVal += (cubieSize + gap) * 3 + gap;
+        yVal -= (cubieSize + gap) * 3 + gap;
+        for (int y = 2; y >= 0; y--) {
+            for (int z = 0; z <= 2; z++) {
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * z,
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
                         xVal + (cubieSize + gap) * z + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         colorToPaint(cube.getColor(2, y, z, 'R')));
 
                 canvas.drawRoundRect(xVal + (cubieSize + gap) * z,
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
                         xVal + (cubieSize + gap) * z + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         strokePaint);
             }
         }
 
         //Paint Whites
-        xVal += (cubieSize + gap)*3 + gap;
-        for(int x = 2; x>=0; x--) {
-            for(int y = 2; y>=0; y--) {
-                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(x-2),
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
-                        xVal + (cubieSize + gap) * Math.abs(x-2) + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+        xVal += (cubieSize + gap) * 3 + gap;
+        for (int x = 2; x >= 0; x--) {
+            for (int y = 2; y >= 0; y--) {
+                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(x - 2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
+                        xVal + (cubieSize + gap) * Math.abs(x - 2) + cubieSize,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         colorToPaint(cube.getColor(x, y, 2, 'D')));
 
-                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(x-2),
-                        yVal + (cubieSize + gap) * Math.abs(y-2),
-                        xVal + (cubieSize + gap) * Math.abs(x-2) + cubieSize,
-                        yVal + (cubieSize + gap) * Math.abs(y-2) + cubieSize,
-                        cubieSize/5,
-                        cubieSize/5,
+                canvas.drawRoundRect(xVal + (cubieSize + gap) * Math.abs(x - 2),
+                        yVal + (cubieSize + gap) * Math.abs(y - 2),
+                        xVal + (cubieSize + gap) * Math.abs(x - 2) + cubieSize,
+                        yVal + (cubieSize + gap) * Math.abs(y - 2) + cubieSize,
+                        cubieSize / 5,
+                        cubieSize / 5,
                         strokePaint);
             }
         }
@@ -369,7 +359,7 @@ public class CubeView extends View {
     }
 
     private Paint colorToPaint(char color) {
-        switch(color) {
+        switch (color) {
             case 'W':
                 return whitePaint;
             case 'Y':
@@ -410,7 +400,8 @@ public class CubeView extends View {
         cube.scramble(scramble);
         //If the cube is being scrambled newly after initializing is complete and animation has begun,
         //be sure to reset all reference indexes
-        movesIndex = 0; phase = 0;
+        movesIndex = 0;
+        phase = 0;
         phaseString = "Sunflower";
         invalidate();
         hasColorInput = false;
@@ -451,7 +442,8 @@ public class CubeView extends View {
         cube.setAllColors(colorsInputted);
         //If the cube is being scrambled newly after initializing is complete and animation has begun,
         //be sure to reset all reference indexes
-        movesIndex = 0; phase = 0;
+        movesIndex = 0;
+        phase = 0;
         phaseString = "Sunflower";
         hasColorInput = true;
         scramble = "";
@@ -469,7 +461,7 @@ public class CubeView extends View {
     }
 
     public void resetCurrentScramble() {
-        if(!hasColorInput) {
+        if (!hasColorInput) {
             cube = new Cube();
             cube.scramble(scramble);
 
@@ -505,41 +497,38 @@ public class CubeView extends View {
         updatePhase();
 
         //Get to a character that is not a space
-        while(movesIndex<movesToPerform.length()-1 && movesToPerform.substring(movesIndex, movesIndex+1).compareTo(" ") == 0) {
+        while (movesIndex < movesToPerform.length() - 1 && movesToPerform.substring(movesIndex, movesIndex + 1).compareTo(" ") == 0) {
             movesIndex++;
         }
         //Same logic as in Cube class's performMoves() method
-        if(movesToPerform.length()>0 && movesToPerform.substring(movesIndex, movesIndex+1) != " ") {
-            if(movesIndex!=movesToPerform.length()-1) {
-                if(movesToPerform.substring(movesIndex+1, movesIndex+2).compareTo("2") == 0) {
+        if (movesToPerform.length() > 0 && movesToPerform.substring(movesIndex, movesIndex + 1) != " ") {
+            if (movesIndex != movesToPerform.length() - 1) {
+                if (movesToPerform.substring(movesIndex + 1, movesIndex + 2).compareTo("2") == 0) {
                     //Turning twice ex. U2
-                    cube.turn(movesToPerform.substring(movesIndex, movesIndex+1));
-                    cube.turn(movesToPerform.substring(movesIndex, movesIndex+1));
+                    cube.turn(movesToPerform.substring(movesIndex, movesIndex + 1));
+                    cube.turn(movesToPerform.substring(movesIndex, movesIndex + 1));
                     movesIndex++;
-                }
-                else if(movesToPerform.substring(movesIndex+1,movesIndex+2).compareTo("'") == 0) {
+                } else if (movesToPerform.substring(movesIndex + 1, movesIndex + 2).compareTo("'") == 0) {
                     //Making a counterclockwise turn ex. U'
-                    cube.turn(movesToPerform.substring(movesIndex, movesIndex+2));
+                    cube.turn(movesToPerform.substring(movesIndex, movesIndex + 2));
                     movesIndex++;
-                }
-                else {
+                } else {
                     //Clockwise turn
-                    cube.turn(movesToPerform.substring(movesIndex, movesIndex+1));
+                    cube.turn(movesToPerform.substring(movesIndex, movesIndex + 1));
                 }
-            }
-            else {
+            } else {
                 //Clockwise turn
-                cube.turn(movesToPerform.substring(movesIndex, movesIndex+1));
+                cube.turn(movesToPerform.substring(movesIndex, movesIndex + 1));
             }
         }
         movesIndex++;
         //Append the moves performed onto the end of movesPerformed
-        if(movesToPerform.length()>0) {
+        if (movesToPerform.length() > 0) {
             movesPerformed = movesToPerform.substring(0, movesIndex);
         }
         //Ensure that movesPerformed does not overflow out of the graphical interface
-        if(movesPerformed.length() >= 35) {
-            movesPerformed = movesPerformed.substring(movesPerformed.length()-30);
+        if (movesPerformed.length() >= 35) {
+            movesPerformed = movesPerformed.substring(movesPerformed.length() - 30);
         }
     }
 
@@ -550,30 +539,36 @@ public class CubeView extends View {
      * 4 = yellowCross		5 = OLL				6 = PLL
      */
     public void updatePhase() {
-        if(movesIndex >= movesToPerform.length()) {
-            switch(phase) {
+        if (movesIndex >= movesToPerform.length()) {
+            switch (phase) {
                 case 0:
-                    phaseString = "White Cross"; break;
+                    phaseString = "White Cross";
+                    break;
                 case 1:
-                    phaseString = "White Corners"; break;
+                    phaseString = "White Corners";
+                    break;
                 case 2:
-                    phaseString = "Second Layer"; break;
+                    phaseString = "Second Layer";
+                    break;
                 case 3:
-                    phaseString = "Yellow Cross";break;
+                    phaseString = "Yellow Cross";
+                    break;
                 case 4:
-                    phaseString = "OLL";break;
+                    phaseString = "OLL";
+                    break;
                 case 5:
-                    phaseString = "PLL";break;
+                    phaseString = "PLL";
+                    break;
                 case 6:
                     //Failsafe to prevent app from crashing if the user tries to fast forward
                     //once the solve is finished
-                    if(!animationStopped) {
+                    if (!animationStopped) {
                         phaseString = "Solved";
                         stopAnimation();
                     }
                     break;
             }
-            if(phase < 7) {
+            if (phase < 7) {
                 movesPerformed = "";
                 phase++;
                 movesIndex = 0;
@@ -595,7 +590,7 @@ public class CubeView extends View {
     }
 
     public void stopAnimation() {
-        if(!animationStopped) {
+        if (!animationStopped) {
             frameTimer.cancel();
             animationStopped = true;
         }
@@ -612,7 +607,7 @@ public class CubeView extends View {
     public void startAnimation(int multiplySpeed) {
         speedMultiplier = multiplySpeed;
 
-        if(animationStopped) {
+        if (animationStopped) {
             animationTask = new TimerTask() {
                 synchronized public void run() {
                     performNextMove();
@@ -626,13 +621,13 @@ public class CubeView extends View {
 
             frameTimer = new Timer();
             frameTimer.scheduleAtFixedRate(animationTask,
-                    TimeUnit.MILLISECONDS.toMillis(DELAY/speedMultiplier),
-                    TimeUnit.MILLISECONDS.toMillis(DELAY/speedMultiplier));
+                    TimeUnit.MILLISECONDS.toMillis(DELAY / speedMultiplier),
+                    TimeUnit.MILLISECONDS.toMillis(DELAY / speedMultiplier));
             animationStopped = false;
         }
     }
 
-    private class UpdateUI extends AsyncTask<Context, Void, SolutionActivity> {
+    private class UpdateUI extends AsyncTask<Context, Void, MainActivity> {
         final static int UPDATE_MOVES_ON_UI = 1;
         final static int SKIP_PHASES = 2;
         private int taskType;
@@ -651,35 +646,34 @@ public class CubeView extends View {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if(taskType == SKIP_PHASES) {
+            if (taskType == SKIP_PHASES) {
                 stopAnimation();
             }
         }
 
         @Override
-        protected SolutionActivity doInBackground(Context... contexts) {
-            SolutionActivity activity = (SolutionActivity)contexts[0];
+        protected MainActivity doInBackground(Context... contexts) {
+            MainActivity activity = (MainActivity) contexts[0];
 
-            if(taskType == SKIP_PHASES) { //At 7 the solve is complete
-                if(skipTo > currentPhase && currentPhase < 7) {
+            if (taskType == SKIP_PHASES) { //At 7 the solve is complete
+                if (skipTo > currentPhase && currentPhase < 7) {
                     cube.performMoves(movesToPerform.substring(movesIndex));
                     currentPhase++;
                     movesToPerform = moveSet[phase];
 
-                    for(; currentPhase < skipTo; currentPhase++) {
+                    for (; currentPhase < skipTo; currentPhase++) {
                         cube.performMoves(moveSet[currentPhase]);
                     }
 
                     movesPerformed = "";
                     movesIndex = 0;
                     movesToPerform = moveSet[currentPhase];
-                }
-                else if (skipTo < currentPhase && currentPhase > 0){
+                } else if (skipTo < currentPhase && currentPhase > 0) {
                     //Log.d("Tried skipping", "true");
                     cube = new Cube();
                     cube.scramble(scramble);
 
-                    for(currentPhase = 0; currentPhase < skipTo; currentPhase++) {
+                    for (currentPhase = 0; currentPhase < skipTo; currentPhase++) {
                         cube.performMoves(moveSet[currentPhase]);
                     }
 
@@ -694,13 +688,12 @@ public class CubeView extends View {
         }
 
         @Override
-        protected void onPostExecute(SolutionActivity activity) {
+        protected void onPostExecute(MainActivity activity) {
 
-            if(taskType == SKIP_PHASES) {
+            if (taskType == SKIP_PHASES) {
                 postInvalidate();
-            }
-            else if(taskType == UPDATE_MOVES_ON_UI) {
-                switch(phase) {
+            } else if (taskType == UPDATE_MOVES_ON_UI) {
+                switch (phase) {
                     case 0:
                         phaseString = "Sunflower";
                         break;
@@ -727,10 +720,11 @@ public class CubeView extends View {
                         break;
                 }
 
-                TextSolutionFragment fragment = (TextSolutionFragment)((AppCompatActivity)getContext())
+                TextSolutionFragment fragment = (TextSolutionFragment) ((AppCompatActivity) getContext())
                         .getSupportFragmentManager().findFragmentById(R.id.container);
 
-                if(fragment != null) {
+                //TODO: separate updating moves from updating title/phase
+                if (fragment != null && movesToPerform.length() > 0) {
                     fragment.updateMoves(movesToPerform.substring(movesIndex).trim(),
                             movesPerformed.trim(), phaseString);
                 }
