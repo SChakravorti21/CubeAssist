@@ -2,6 +2,10 @@ package comschakravorti21.github.cubeassist;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Copyright 2017, Shoumyo Chakravorti, All rights reserved.
  * <p>
@@ -102,14 +106,123 @@ public class Cube {
 
     }
 
-    public Cube(Cube nCube) {
-        for (int x = 0; x < 3; x++) {
-            for (int y = 0; y < 3; y++) {
-                for (int z = 0; z < 3; z++) {
-                    cubiePos[x][y][z] = nCube.cubiePos[x][y][z];
+    public static boolean isSolvable(char[][][] colors) {
+        //First let's check if all colors occur exactly 9 TIMES
+        List<Character> possibleColors = new ArrayList<>(
+                Arrays.asList('R', 'Y', 'G', 'B', 'O', 'W'));
+        int[] timesInputted = new int[6];
+
+        //Keep track of how many times each color occurs
+        for(char[][] i : colors) {
+            for(char[] j : i) {
+                for(char color : j) {
+                    timesInputted[possibleColors.indexOf(color)] += 1;
                 }
             }
         }
+
+        //Evaluate whether each color occurs 9 times
+        for(int times : timesInputted) {
+            if(times != 9) return false;
+        }
+
+        //Let's check if any cubie contains the SAME COLORS more than once
+        Cube cube = new Cube();
+        cube.setAllColors(colors);
+
+        for (Cubie[][] i : cube.cubiePos) {
+            for (Cubie[] j : i) {
+                for (Cubie cubie : j) {
+                    CubieColor[] tempColors = cubie.getColors();
+                    List<Character> tempList = new ArrayList<>();
+                    for (CubieColor color : tempColors) {
+                        tempList.add(color.getColor());
+                    }
+
+                    //Only need to loop through first two colors at most
+                    //Ex. if a corner cubie contains same colors,
+                    //then one of the "same" colors will either be the first or second color.
+                    for (int k = 0; k < tempList.size() && k < 2; k++) {
+
+                        //If the cubie contains the color opposite to the one being checked,
+                        //the cube is unsolvable
+                        if(tempList.lastIndexOf(tempList.get(k)) > k)
+                            return false;
+                    }
+                }
+            }
+        }
+
+        //Now let's check if any cubie contains OPPOSITE COLORS, such as green and blue
+        List<Character> opposites = new ArrayList<>(Arrays.asList('O', 'W', 'B', 'G', 'R', 'Y'));
+
+        for (Cubie[][] i : cube.cubiePos) {
+            for (Cubie[] j : i) {
+                for (Cubie cubie : j) {
+                    CubieColor[] tempColors = cubie.getColors();
+
+                    //Only need to loop through first two colors at most
+                    //Ex. if a corner cubie contains opposite colors,
+                    //then one of the opposites will either be the first or second color.
+                    for (int k = 0; k < tempColors.length && k < 2; k++) {
+                        char color = tempColors[k].getColor();
+
+                        //If the cubie contains the color opposite to the one being checked,
+                        //the cube is unsolvable
+                        if(color != 'A' &&
+                                cubie.getDirOfColor((opposites
+                                .get(possibleColors
+                                        .indexOf(color)))) != 'A')
+                            return false;
+                    }
+                }
+            }
+        }
+
+        //Now we have to check all pieces orientations and permutations, though this
+        //would be easier if we only have to deal with the top layer.
+        //So let's start with solving the first two layers.
+        cube.makeSunflower();
+        cube.makeWhiteCross();
+        cube.finishWhiteLayer();
+        cube.insertAllEdges();
+
+        //Let's check the EDGE ORIENTATIONS
+        int oriented = 0;
+        for (int x = 0; x < 3; x++) {
+           for (int y = 0; y < 3; y++) {
+               if (cube.cubiePos[x][y][0].isEdgeCubie() &&
+                        cube.cubiePos[x][y][0].getDirOfColor('Y') == 'U')
+                   oriented++;
+           }
+        }
+        Log.d("Oriented", "" + oriented);
+
+        if (oriented % 2 != 0) {
+            return false;
+        }
+
+        //Let's check CORNER ORIENTATION
+        int twists = 0;
+        for (int i = 0; i < 4; i++) {
+            //Check the number of 120 degree twists required for the yellow side
+            //of the cubie to be facing up
+            char dir = cube.cubiePos[0][0][0].getDirOfColor('Y');
+            if (dir == 'L')
+                twists++;
+            else if (dir == 'F')
+                twists += 2;
+
+            //Repeat for all four corners, so turn U
+            cube.turn("U");
+        }
+
+        //If the total number of twsits isn't divislbe by 3, cube is unsolvable
+        if(twists % 3 != 0) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
