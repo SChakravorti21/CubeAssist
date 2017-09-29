@@ -18,6 +18,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.List;
 
+import static android.R.attr.x;
 import static android.content.ContentValues.TAG;
 
 /**
@@ -34,8 +35,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     int camImageWidth, camImageHeight;
     private SurfaceHolder surfaceHolder;
     private byte[] data;
-    //private int[][] previewPixels;
+    private float[][][][] pixelHSVs;
     private Bitmap[] previewBitmaps;
+    private int side;
+    private int centerX, centerY, startX, startY, cubieSideLength;
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -49,7 +52,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         previewBitmaps = new Bitmap[6];
-        //previewPixels = new int[6][];
+        pixelHSVs = new float[6][3][3][3];
     }
 
     @Override
@@ -61,6 +64,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (supportedPreviewSizes != null) {
             previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
         }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        previewBitmaps = null;
     }
 
     @Override
@@ -142,13 +151,29 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    public void setSide(int side) {
+        this.side = side;
+    }
+
+    public void setGridPositions(int... values) {
+        if(values.length == 5) {
+//            Log.d("Values: ", values[0] + " " + values[1] + " " + values[2]
+//                    + " " + values[3] + " " + values[4]);
+            centerX = values[0];
+            centerY = values[1];
+            startX = values[3];
+            startY = values[2];
+            cubieSideLength = values[4];
+        }
+    }
+
     public void saveCurrentBitmap(int side) {
         // Log.d("Width", "" + camImageWidth);
         //Log.d("Height", "" + camImageHeight);
 
         //The decodeYUV420 way
-//        previewPixels[side] = decodeYUV420SP(data, camImageWidth, camImageHeight);
-//        Bitmap bitmap = Bitmap.createBitmap(previewPixels[side], camImageWidth,
+//        pixelHSVs[side] = decodeYUV420SP(data, camImageWidth, camImageHeight);
+//        Bitmap bitmap = Bitmap.createBitmap(pixelHSVs[side], camImageWidth,
 //                camImageHeight, Bitmap.Config.ARGB_8888);
 //
 
@@ -165,39 +190,56 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Log.d("Side", "" + side);
 
         bitmapData.copyTo(bitmap);
-        previewBitmaps[side] = bitmap;
+        //previewBitmaps[side] = bitmap;
 
         Log.d("Width", "" + bitmap.getWidth());
         Log.d("Height", "" + bitmap.getHeight());
+
+        int y = startY;
+        int x = startX;
+
+        for (int j = 0; j < 3; j++, startX += cubieSideLength) {
+            for (int k = 0; k < 3; k++, startY += cubieSideLength) {
+                float[] colorHSV = new float[3];
+                Color.colorToHSV(bitmap
+                                .getPixel((int) (startX + 0.5 * cubieSideLength),
+                                        (int) (startY + 0.5 * cubieSideLength)),
+                                 colorHSV);
+                pixelHSVs[side][j][k][0] = colorHSV[0];
+                pixelHSVs[side][j][k][1] = colorHSV[1];
+                pixelHSVs[side][j][k][2] = colorHSV[2];
+            }
+            startY = y;
+        }
+
+        startY = y;
+        startX = x;
 
         Toast.makeText(getContext(), "Picture captured! Select another side.",
                 Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        previewBitmaps = null;
-    }
-
-    public char[][][] resolveColors(int centerX, int centerY, int startX, int startY, int cubieSideLength) {
+    public char[][][] resolveColors() {
         //First check if any of the Bitmaps are null, can't do comparison
-        for (Bitmap previewBitmap : previewBitmaps) {
-            if (previewBitmap == null) {
-                Toast.makeText(getContext(), "Please capture all six sides first",
-                        Toast.LENGTH_LONG).show();
-                return null;
-            }
-        }
+//        for (Bitmap previewBitmap : previewBitmaps) {
+//            if (previewBitmap == null) {
+//                Toast.makeText(getContext(), "Please capture all six sides first",
+//                        Toast.LENGTH_LONG).show();
+//                return null;
+//            }
+//        }
 
         char[] indexColors = {'R', 'Y', 'G', 'B', 'O', 'W'};
         float[][] centerColors = new float[6][];
 
         for (int i = 0; i < centerColors.length; i++) {
-            float[] colorHSV = new float[3];
-            Color.colorToHSV(previewBitmaps[i].getPixel(centerY, centerX),
-                    colorHSV);
-            centerColors[i] = colorHSV;
+//            float[] colorHSV = new float[3];
+//            Color.colorToHSV(previewBitmaps[i].getPixel(centerY, centerX),
+//                    colorHSV);
+//            centerColors[i] = colorHSV;
+
+            //Copy the appropriate center's color into the array
+            centerColors[i] = pixelHSVs[i][1][1];
 
             Log.d("Center Hue " + indexColors[i], "" + centerColors[i][0]);
             Log.d("Center Saturation " + indexColors[i], "" + centerColors[i][1]);
@@ -211,20 +253,58 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         //Log.d("Start X", "" + startX);
         //Log.d("Start Y", "" + startY);
 
-        int y = startY;
-        int x = startX;
-        startY = startX;
-        startX = y;
+//        int y = startY;
+//        int x = startX;
+//        //The (0,0) position is actually in the top right position since
+//        //we rotated 90 degrees, so swtich X and Y
+//        startY = x;
+//        startX = y;
+//
+//        char[][][] colors = new char[6][3][3];
+//        for (int i = 0; i < previewBitmaps.length; i++) {
+//            for (int j = 0; j < 3; j++, startX += cubieSideLength) {
+//                for (int k = 0; k < 3; k++, startY += cubieSideLength) {
+//                    float[] colorHSV = new float[3];
+//                    Color.colorToHSV(previewBitmaps[i]
+//                                    .getPixel((int) (startX + 0.5 * cubieSideLength),
+//                                            (int) (startY + 0.5 * cubieSideLength)),
+//                            colorHSV);
+//
+//                    float hue = colorHSV[0];
+//                    char color = indexColors[i];
+//                    //Do not change the color if it is a center color
+//                    if (j == 1 && k == 1) {
+//                        colors[i][k][j] = color;
+//                        Log.d("" + i + ", " + j + ", " + k, " " + color);
+//                    } else if (colorHSV[1] < 0.3) {
+//                        //If saturation is very low, it's most likely white
+//                        colors[i][k][j] = 'W';
+//                        Log.d("" + i + ", " + j + ", " + k, " " + 'W');
+//                    } else {
+//                        int minDiff = (int) (Math.abs(hue - centerColors[i][0]));
+//
+//                        for (int l = 0; l < centerColors.length; l++) {
+//                            int diff = (int) (Math.abs(hue - centerColors[l][0]));
+//                            if (diff < minDiff) {
+//                                minDiff = diff;
+//                                color = indexColors[l];
+//                            }
+//                        }
+//
+//                        colors[i][k][j] = color;
+//                        Log.d("" + i + ", " + j + ", " + k, " " + color);
+//                    }
+//                }
+//                startY = x;
+//            }
+//            startX = y;
+//        }
 
         char[][][] colors = new char[6][3][3];
-        for (int i = 0; i < previewBitmaps.length; i++) {
-            for (int j = 0; j < 3; j++, startX += cubieSideLength) {
-                for (int k = 0; k < 3; k++, startY += cubieSideLength) {
-                    float[] colorHSV = new float[3];
-                    Color.colorToHSV(previewBitmaps[i]
-                                    .getPixel((int) (startX + 0.5 * cubieSideLength),
-                                            (int) (startY + 0.5 * cubieSideLength)),
-                            colorHSV);
+        for (int i = 0; i < pixelHSVs.length; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    float[] colorHSV = pixelHSVs[i][j][k];
 
                     float hue = colorHSV[0];
                     char color = indexColors[i];
@@ -251,9 +331,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                         Log.d("" + i + ", " + j + ", " + k, " " + color);
                     }
                 }
-                startY = x;
             }
-            startX = y;
         }
 
         return colors;

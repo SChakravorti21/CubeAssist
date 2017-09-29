@@ -187,8 +187,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                 preview.saveCurrentBitmap(side);
                 break;
             case R.id.solve_cube:
-                char[][][] colors = preview.resolveColors(centerX, centerY, startX, startY,
-                        cubieSideLength);
+                char[][][] colors = preview.resolveColors();
 
                 if(colors != null) {
                     Intent colorInputIntent = new Intent(getApplicationContext(),
@@ -250,6 +249,10 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                 this.side = 5; //case 'W'
                 break;
         }
+
+        if(preview != null){
+            preview.setSide(this.side);
+        }
     }
 
     @Override
@@ -290,6 +293,7 @@ public class CaptureCubeActivity extends AppCompatActivity implements SurfaceHol
                         strokePaint);
             }
         }
+        preview.setGridPositions(centerX, centerY, startX, startY, cubieSideLength);
 
         surfaceHolder.unlockCanvasAndPost(canvas);
     }
