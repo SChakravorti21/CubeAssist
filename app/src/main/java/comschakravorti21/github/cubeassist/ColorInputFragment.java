@@ -18,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.Arrays;
 
 import static comschakravorti21.github.cubeassist.MainActivity.CAMERA_INPUT;
@@ -54,9 +56,11 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
             case R.id.previous_side:
                 previousSide();
                 break;
+
             case R.id.next_side:
                 nextSide();
                 break;
+
             case R.id.rotate_left:
                 rotateMatrix(colorsInputted[getIndexOfSide(sideChosen)],
                         -90,
@@ -78,6 +82,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                             }
                         });
                 break;
+
             case R.id.rotate_right:
                 rotateMatrix(colorsInputted[getIndexOfSide(sideChosen)],
                         90,
@@ -99,35 +104,44 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                             }
                         });
                 break;
+
             case R.id.generate_solution:
-                TextSolutionFragment fragment = new TextSolutionFragment();
-                Bundle args = new Bundle();
-                args.putString(INITIAL_INPUT_TYPE,
-                        MANUAL_COLOR_INPUT);
+                if(Cube.isSolvable(colorsInputted)) {
+                    TextSolutionFragment fragment = new TextSolutionFragment();
+                    Bundle args = new Bundle();
+                    args.putString(INITIAL_INPUT_TYPE,
+                            MANUAL_COLOR_INPUT);
 
-                args.putCharArray(COLORS_INPUTTED_LEFT,
-                        packageSide(getIndexOfSide('L')));
+                    args.putCharArray(COLORS_INPUTTED_LEFT,
+                            packageSide(getIndexOfSide('L')));
 
-                args.putCharArray(COLORS_INPUTTED_RIGHT,
-                        packageSide(getIndexOfSide('R')));
+                    args.putCharArray(COLORS_INPUTTED_RIGHT,
+                            packageSide(getIndexOfSide('R')));
 
-                args.putCharArray(COLORS_INPUTTED_UP,
-                        packageSide(getIndexOfSide('U')));
+                    args.putCharArray(COLORS_INPUTTED_UP,
+                            packageSide(getIndexOfSide('U')));
 
-                args.putCharArray(COLORS_INPUTTED_DOWN,
-                        packageSide(getIndexOfSide('D')));
+                    args.putCharArray(COLORS_INPUTTED_DOWN,
+                            packageSide(getIndexOfSide('D')));
 
-                args.putCharArray(COLORS_INPUTTED_FRONT,
-                        packageSide(getIndexOfSide('F')));
+                    args.putCharArray(COLORS_INPUTTED_FRONT,
+                            packageSide(getIndexOfSide('F')));
 
-                args.putCharArray(COLORS_INPUTTED_BACK,
-                        packageSide(getIndexOfSide('B')));
-                fragment.setArguments(args);
+                    args.putCharArray(COLORS_INPUTTED_BACK,
+                            packageSide(getIndexOfSide('B')));
+                    fragment.setArguments(args);
 
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(container, fragment, "Colors Inputted")
-                        .addToBackStack(null)
-                        .commit();
+                    getActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(container, fragment, "Colors Inputted")
+                            .addToBackStack(null)
+                            .commit();
+                } else {
+                    Toast.makeText(getContext(),
+                            "Sorry, the cube as inputted is unsolvable. " +
+                            "Please double check your inputs",
+                            Toast.LENGTH_LONG).show();
+                }
+
                 break;
         }
     }
