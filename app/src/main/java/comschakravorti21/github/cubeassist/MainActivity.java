@@ -158,10 +158,6 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                     break;
                 case R.id.camera_input:
                     if (!currentMode.equals("Camera Input")) {
-//                        getSupportFragmentManager().beginTransaction()
-//                                .replace(R.id.container, new CaptureCubeFragment(), "Camera Input Fragment")
-//                                .addToBackStack(null)
-//                                .commit();
                         Intent intent = new Intent(getApplicationContext(), CaptureCubeActivity.class);
                         startActivity(intent);
                         currentMode = "Camera Input";
@@ -170,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements EditScrambleDialo
                     }
                     break;
             }
-            //solutionFragment = (TextSolutionFragment)getSupportFragmentManager().findFragmentById(R.id.container);
             return true;
         }
     }

@@ -208,13 +208,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public char[][][] resolveColors() {
         //First check if any of the Bitmaps are null, can't do comparison
-        for (Bitmap previewBitmap : previewBitmaps) {
-            if (previewBitmap == null) {
-                Toast.makeText(getContext(), "Please capture all six sides first",
-                        Toast.LENGTH_LONG).show();
-                return null;
-            }
-        }
+        //TODO: Check if colors inputs complete
 
         char[] indexColors = {'R', 'Y', 'G', 'B', 'O', 'W'};
         float[][] centerColors = new float[6][];
