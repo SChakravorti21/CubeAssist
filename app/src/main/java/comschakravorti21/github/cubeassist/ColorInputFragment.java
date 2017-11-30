@@ -44,28 +44,41 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
     private char sideChosen;
     private char[][][] colorsInputted;
     private int animTime;
-    //private String[] instructionColors;
 
+    /**
+     * Required empty public constructor
+     */
     public ColorInputFragment() {
-        // Required empty public constructor
+
     }
 
+    /**
+     * Handles click events on the ColorInputFragments.
+     * Click events that users can trigger are looking at
+     * different sides of the cube and rotating certain sides
+     * of the cube to align with the instructions.
+     * @param view
+     */
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.previous_side:
+                //show the previous side on the cube if there is one
                 previousSide();
                 break;
 
             case R.id.next_side:
+                //show the next side on the cube if there is one
                 nextSide();
                 break;
 
             case R.id.rotate_left:
+                //rotate the current side 90 degrees counterclockwise
+                //and update the data accordingly
                 rotateMatrix(colorsInputted[getIndexOfSide(sideChosen)],
-                        -90,
-                        getIndexOfSide(sideChosen));
+                        -90, getIndexOfSide(sideChosen));
 
+                //animate the rotation as UI confirmation
                 userInputField.animate()
                         .rotation(-90)
                         .setDuration(animTime)
@@ -84,6 +97,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.rotate_right:
+                //similar to rotate left
                 rotateMatrix(colorsInputted[getIndexOfSide(sideChosen)],
                         90,
                         getIndexOfSide(sideChosen));
@@ -106,8 +120,13 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.generate_solution:
+                //First check if the cube is solvable
                 if(Cube.isSolvable(colorsInputted)) {
+                    //Create the solution fragment that the solution will be displayed on
                     TextSolutionFragment fragment = new TextSolutionFragment();
+
+                    //"Package" all of the color information into 1D arrays so that they can
+                    //be added to the bundle.
                     Bundle args = new Bundle();
                     args.putString(INITIAL_INPUT_TYPE,
                             MANUAL_COLOR_INPUT);
@@ -129,8 +148,11 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
 
                     args.putCharArray(COLORS_INPUTTED_BACK,
                             packageSide(getIndexOfSide('B')));
+                    //Pass in the inputted colors to the solution fragment so that it
+                    //knows what to display a solution for
                     fragment.setArguments(args);
 
+                    //Swap fragments
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(container, fragment, "Colors Inputted")
                             .addToBackStack(null)
@@ -146,6 +168,12 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    /**
+     * Overrides Fragment's onCreate method. Initializes colors
+     * displayed and animation time.
+     * @param savedInstanceState Bundle representing the saved state of
+     *                           fragment (always empty)
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -161,11 +189,20 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
     }
 
 
+    /**
+     * Inflates the manual color input views onto the fragment
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_color_input, container, false);
+
+        //Set onClick listeners to everything that needs one
         rootView.findViewById(R.id.previous_side).setOnClickListener(this);
         rootView.findViewById(R.id.next_side).setOnClickListener(this);
         rootView.findViewById(R.id.generate_solution).setOnClickListener(this);
@@ -175,14 +212,22 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         palette = rootView.findViewById(R.id.palette);
         userInputField = rootView.findViewById(R.id.user_input_field);
 
+        //Have the blue button in the palette pre-selected for user
         Button selectBlue = rootView.findViewById(R.id.select_blue);
         selectBlue.setActivated(true);
 
+        //color all the sides
         repaintSide();
 
         return rootView;
     }
 
+    /**
+     * Once the view is created, this method instantiates and attaches
+     * onClick listeners to all buttons on the screen.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -196,6 +241,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                     previousSelection.setActivated(false);
                 }
 
+                //Update the color selected on the palette
                 switch (view.getId()) {
                     case R.id.select_blue:
                         colorSelected = 'B';
@@ -217,6 +263,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                         break;
                 }
 
+                //Activate the selection for UI confirmation of selection
                 if (view instanceof Button) {
                     previousSelection = (Button) view;
                 }
@@ -230,6 +277,8 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
             palette.getChildAt(i).setOnTouchListener(paletteButtonClickListener);
         }
 
+        //Create a single onClick listener for all buttons since every grid
+        //button behaves the same way
         View.OnClickListener userFieldClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -266,19 +315,31 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
 
         for (int i = userInputField.getChildCount() - 1; i >= 0; i--) {
             Button selectionButton = (Button) userInputField.getChildAt(i);
-            //Set a position tag to that we can access it later for row and column clicked
+            //Set a position tag for each button so that we can access
+            //it later for row and column clicked
             selectionButton.setTag("" + i);
 
             selectionButton.setOnClickListener(userFieldClickListener);
         }
     }
 
+    /**
+     * Inflates the menu in the action bar
+     * @param menu the menu to inflate
+     * @param inflater the MenuInflater that inflates the menu
+     */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         ((Activity) getContext()).getMenuInflater().inflate(R.menu.menu_color_input, menu);
     }
 
+    /**
+     * Handle option selection in the action bar. Currently the only
+     * option is to reset the cube inputs
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -315,6 +376,11 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    /**
+     * Gets the letter side corresponding to the numerical side.
+     * @param index the current "side" index
+     * @return the letter side (eg. 'L' for left)
+     */
     private char getSideOfIndex(int index) {
         switch (index) {
             case 0:
@@ -332,6 +398,10 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    /**
+     * Repaints the side of the cube that is currently being viewed
+     * (Usually called when the user moves to a different side of the cube).
+     */
     private void repaintSide() {
         int index = getIndexOfSide(sideChosen);
         for (int i = 0; i < 3; i++) {
@@ -360,6 +430,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
             }
         }
 
+        //Update the instructions so user knows how to hold cube when inputting color
         updateInstructions();
     }
 
@@ -378,14 +449,19 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    /**
+     * When user comes to a ColorInputFragment from the camera input process,
+     * the colors picked up from the
+     * @param args
+     */
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
         if (args != null) {
-            Log.d("Bundle null", "FLASE");
+            Log.d("Bundle null", "FALSE");
             String initInputType = args.getString(INITIAL_INPUT_TYPE);
             if (initInputType != null && initInputType.equals(CAMERA_INPUT)) {
-                Log.d("CAMERA INPUT", "TRUEE");
+                Log.d("CAMERA INPUT", "TRUE");
                 colorsInputted = new char[6][][];
                 colorsInputted[0] = unpackArrays(args.getCharArray(COLORS_INPUTTED_LEFT));
                 colorsInputted[1] = unpackArrays(args.getCharArray(COLORS_INPUTTED_UP));
@@ -395,7 +471,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                 colorsInputted[5] = unpackArrays(args.getCharArray(COLORS_INPUTTED_DOWN));
             }
         } else {
-            Log.d("Bundle null", "TRUEE");
+            Log.d("Bundle null", "TRUE");
         }
     }
 
@@ -447,7 +523,11 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         colorsInputted[side] = rotated;
     }
 
+    /**
+     * Shows the next side of the cube if there is one.
+     */
     private void nextSide() {
+        //Update side and repaint
         int currentIndex = getIndexOfSide(sideChosen);
         if (currentIndex < 5) {
             sideChosen = getSideOfIndex(currentIndex + 1);
@@ -455,25 +535,9 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         }
     }
 
-    private char[] packageSide(int side) {
-        char[] packageArray = new char[9];
-        int index = side;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                packageArray[i * 3 + j] = colorsInputted[index][i][j];
-            }
-        }
-        return packageArray;
-    }
-
-    private char[][] unpackArrays(char[] colorsArray) {
-        char[][] unpackedArray = new char[3][3];
-        for (int i = 0; i < colorsArray.length; i++) {
-            unpackedArray[i / 3][i % 3] = colorsArray[i];
-        }
-        return unpackedArray;
-    }
-
+    /**
+     * Shows the previous side of the cube if there is one.
+     */
     private void previousSide() {
         int currentIndex = getIndexOfSide(sideChosen);
         if (currentIndex > 0) {
@@ -482,6 +546,41 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
         }
     }
 
+    /**
+     * Packages a single side into a 1D character array that can be passed
+     * into a Bundle.
+     * @param side the side to package
+     * @return a corresponding char[] array
+     */
+    private char[] packageSide(int side) {
+        char[] packageArray = new char[9];
+        int index = side;
+        //"Flatten" out the 2D array
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                packageArray[i * 3 + j] = colorsInputted[index][i][j];
+            }
+        }
+        return packageArray;
+    }
+
+    /**
+     * Unpacks a 1D char array into a corresponding 2D char array for a cube side.
+     * @param colorsArray the packaged array
+     * @return the unpackaged 2D array
+     */
+    private char[][] unpackArrays(char[] colorsArray) {
+        char[][] unpackedArray = new char[3][3];
+        for (int i = 0; i < colorsArray.length; i++) {
+            unpackedArray[i / 3][i % 3] = colorsArray[i];
+        }
+        return unpackedArray;
+    }
+
+    /**
+     * Updates the instructions in upper TextViews
+     * to explain how to hold the cube for correct inputs.
+     */
     private void updateInstructions() {
         String[] colors = new String[3];
         colors[0] = "TOP: ";
@@ -521,6 +620,7 @@ public class ColorInputFragment extends Fragment implements View.OnClickListener
                 break;
         }
 
+        //Update each TextView with the respective colors
         TextView topColor = rootView.findViewById(R.id.top_color);
         topColor.setText(colors[0]);
 
